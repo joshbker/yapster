@@ -1,0 +1,17 @@
+[build]
+command = "npm run build"
+publish = "build"
+
+[build.environment]
+NODE_VERSION = "20"
+
+[site]
+bucket = "build"
+
+[env.production]
+name = "yapster"
+workers_dev = true
+
+[env.development]
+name = "yapster-dev"
+workers_dev = true 
