@@ -1,13 +1,9 @@
+name = "yapster"
+main = "build/index.js"
+compatibility_date = "2023-10-30"
+
 [build]
 command = "npm run build"
-publish = "build"
-
-[build.environment]
-NODE_VERSION = "20"
-node_compat = true
-
-[site]
-bucket = "build"
 
 [env.production]
 name = "yapster"
