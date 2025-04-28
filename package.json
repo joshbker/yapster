@@ -27,6 +27,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@sveltejs/adapter-cloudflare": "^7.0.1",
 		"apexcharts": "^4.1.0",
 		"better-auth": "^1.2.7",
 		"clsx": "^2.1.1",
