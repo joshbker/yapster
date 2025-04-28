@@ -1,6 +1,8 @@
 name = "yapster"
 main = "build/index.js"
 compatibility_date = "2023-10-30"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "build"
 
 [build]
 command = "npm run build"
