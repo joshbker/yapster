@@ -10,20 +10,20 @@
 </script>
 
 {#if data.user}
-	<div class="container mx-auto px-4">
+	<div class="container px-2">
 		<div class="flex h-12 items-center justify-between">
-			<div class="flex items-center gap-3 text-sm">
-				<Button variant="ghost" class="p-0">For you</Button>
-				<Button variant="ghost" class="p-0">Following</Button>
+			<div class="flex items-center text-sm">
+				<Button variant="ghost" class="px-2">For you</Button>
+				<Button variant="ghost" class="px-2">Following</Button>
 			</div>
 
 			<!-- Navigation Items -->
-			<div class="flex items-center gap-3">
-				<Button variant="ghost" href="/account/notifications" class="p-0">
+			<div class="flex items-center">
+				<Button variant="ghost" size="icon" href="/account/notifications" >
 					<Bell class="h-5 w-5" />
 					<span class="sr-only">Notifications</span>
 				</Button>
-				<Button variant="ghost" href="/account/messages" class="p-0">
+				<Button variant="ghost" size="icon" href="/account/messages">
 					<Send class="h-5 w-5" />
 					<span class="sr-only">Messages</span>
 				</Button>
