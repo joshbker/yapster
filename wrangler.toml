@@ -4,6 +4,7 @@ publish = "build"
 
 [build.environment]
 NODE_VERSION = "20"
+node_compat = true
 
 [site]
 bucket = "build"
