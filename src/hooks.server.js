@@ -26,5 +26,9 @@ export async function handle({ event, resolve }) {
         throw redirect(302, "/");
     }
 
+    if (!session) {
+        throw redirect(302, "/account/login");
+    }
+
     return svelteKitHandler({ event, resolve, auth });
 }
