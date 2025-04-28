@@ -17,6 +17,7 @@ export const auth = betterAuth({
 			displayName: {
 				type: "string",
 				required: true,
+				defaultValue: undefined,
 			},
 		},
 	},
