@@ -4,7 +4,6 @@
 	import { PasswordInput } from '$lib/component/ui/password-input';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '$lib/component/ui/card';
 	import { client } from '$lib/auth/auth-client';
-	import { goto } from '$app/navigation';
 
 	let username = '';
 	let email = '';
@@ -34,7 +33,7 @@
 			},
 			onSuccess: (ctx) => {
 				console.log("SUCCESS", ctx)
-				goto('/');
+				window.location.href = '/';
 			},
 			onError: (ctx) => {
 				console.log("ERROR", ctx)
