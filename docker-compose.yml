@@ -1,0 +1,13 @@
+networks:
+  proxiable:
+    name: proxiable
+    external: true
+
+services:
+  yapster:
+    container_name: yapster
+    image: yapster:latest
+    env_file:
+      - .env
+    networks:
+      - proxiable
