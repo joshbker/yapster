@@ -3,13 +3,13 @@
 	import { Input } from '$lib/component/ui/input';
 	import { PasswordInput } from '$lib/component/ui/password-input';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '$lib/component/ui/card';
+	import { isValidEmail } from '$lib/util';
 	import { client } from '$lib/auth/auth-client';
-	import { goto } from '$app/navigation';
 
 	export let showForgotPassword = true;
 	export let showCreateAccount = true;
 
-	let email = '';
+	let identifier = '';
 	let password = '';
 	let isLoading = false;
 	let error = '';
@@ -18,25 +18,47 @@
 		error = '';
 		isLoading = true;
 
-		await client.signIn.email({
-			email: email,
-			password: password,
-			callbackURL: "/"
-		}, {
-			onRequest: (ctx) => {
-				console.log("REQUEST", ctx)
-			},
-			onSuccess: (ctx) => {
-				console.log("SUCCESS", ctx)
-				goto('/');
-			},
-			onError: (ctx) => {
-				console.log("ERROR", ctx)
-				error = ctx.error.message || 'Invalid credentials';
-			}
-		});
-
-		isLoading = false;
+		if (isValidEmail(identifier)) {
+			await client.signIn.email({
+				email: identifier,
+				password: password,
+				callbackURL: "/"
+			}, {
+				onRequest: (ctx) => {
+					console.log("REQUEST", ctx)
+				},
+				onSuccess: (ctx) => {
+					console.log("SUCCESS", ctx)
+					window.location.href = '/';
+					isLoading = false;
+				},
+				onError: (ctx) => {
+					console.log("ERROR", ctx)
+					error = ctx.error.message || 'Invalid credentials';
+					isLoading = false;
+				}
+			});
+		} else {
+			await client.signIn.username({
+				username: identifier,
+				password: password,
+				callbackURL: "/"
+			}, {
+				onRequest: (ctx) => {
+					console.log("REQUEST", ctx)
+				},
+				onSuccess: (ctx) => {
+					console.log("SUCCESS", ctx)
+					window.location.href = '/';
+					isLoading = false;
+				},
+				onError: (ctx) => {
+					console.log("ERROR", ctx)
+					error = ctx.error.message || 'Invalid credentials';
+					isLoading = false;
+				}
+			});
+		}
 	}
 </script>
 
@@ -70,7 +92,7 @@
 						type="text" 
 						placeholder="Username or email address" 
 						class="rounded-lg text-foreground border-border"
-						bind:value={email}
+						bind:value={identifier}
 						required
 					/>
 					<PasswordInput 

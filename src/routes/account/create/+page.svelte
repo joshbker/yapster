@@ -25,7 +25,7 @@
 		await client.signUp.email({
 			email: email,
 			password: password,
-			name: username,
+			username: username.toLowerCase(),
 			callbackURL: "/"
 		}, {
 			onRequest: (ctx) => {
@@ -34,14 +34,14 @@
 			onSuccess: (ctx) => {
 				console.log("SUCCESS", ctx)
 				window.location.href = '/';
+				isLoading = false;
 			},
 			onError: (ctx) => {
 				console.log("ERROR", ctx)
 				error = ctx.error.message || 'Failed to create account';
+				isLoading = false;
 			}
 		});
-
-		isLoading = false;
 	}
 </script>
 
