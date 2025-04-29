@@ -6,27 +6,28 @@ const unauthenticatedRoutes = ["/account/create", "/account/login", "/account/fo
 
 export async function handle({ event, resolve }) {
     const session = await auth.api.getSession({ headers: event.request.headers });
-
+    const pathname = event.url.pathname;
+    
     if (session) {
         event.locals.user = session.user;
     }
 
-    console.log("PATHNAME", event.url.pathname)
+    const isApiRoute = pathname.startsWith("/api/");
+    const isAuthRoute = pathname.startsWith("/api/auth");
+    const isUnauthenticatedRoute = unauthenticatedRoutes.includes(pathname);
 
-    // Protect API routes
-    if (
-        event.url.pathname.startsWith("/api/") &&
-        !event.url.pathname.startsWith("/api/auth") &&
-        !session
-    ) {
+    // Handle API routes - require auth except for auth endpoints
+    if (isApiRoute && !isAuthRoute && !session) {
         throw error(401, "Unauthorized");
     }
 
-    if (unauthenticatedRoutes.includes(event.url.pathname) && session) {
+    // Redirect authenticated users away from login/register pages
+    if (isUnauthenticatedRoute && session) {
         throw redirect(302, "/");
     }
 
-    if (!unauthenticatedRoutes.includes(event.url.pathname) && !session) {
+    // Require authentication for all routes except auth routes and unauthenticated routes
+    if (!isUnauthenticatedRoute && !isAuthRoute && !session) {
         throw redirect(302, "/account/login");
     }
 
