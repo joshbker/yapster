@@ -20,17 +20,17 @@ export const auth = betterAuth({
 		additionalFields: {
 			banner: {
 				type: "string",
-				required: false,
+				required: true,
 				defaultValue: ""
 			},
 			pronouns: {
 				type: "string",
-				required: false,
+				required: true,
 				defaultValue: ""
 			},
 			bio: {
 				type: "string",
-				required: false,
+				required: true,
 				defaultValue: ""
 			},
 			verified: {

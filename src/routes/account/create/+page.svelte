@@ -26,6 +26,18 @@
 			email: email,
 			password: password,
 			username: username.toLowerCase(),
+
+			name: "",
+			image: "",
+			banner: "",
+			pronouns: "",
+			bio: "",
+			verified: false,
+			followers: [],
+			following: [],
+			posts: [],
+			likes: [],
+
 			callbackURL: "/"
 		}, {
 			onRequest: (ctx) => {
