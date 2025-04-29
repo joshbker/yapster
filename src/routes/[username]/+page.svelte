@@ -24,9 +24,9 @@
     {:else}
         <div class="w-full h-32 lg:h-48 lg:rounded-xl bg-gradient-to-br from-purple-500 to-blue-400"></div>
     {/if}
-    <img src={user.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="absolute left-3 lg:left-14 -bottom-2 w-24 h-24 rounded-full object-cover border-4 border-background">
+    <img src={user.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="absolute left-3 lg:left-14 -bottom-8 lg:-bottom-2 w-24 h-24 rounded-full object-cover border-4 border-background">
 </div>
-<div class="container max-w-4xl px-4 lg:px-0 py-2">
+<div class="container max-w-4xl px-4 lg:px-0 py-2 mt-6 lg:mt-0">
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
             <div class="flex items-center gap-1.5">
