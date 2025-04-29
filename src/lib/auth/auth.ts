@@ -50,6 +50,14 @@ export const auth = betterAuth({
 				type: "string[]",
 				required: true,
 			},
+			saves: {
+				type: "string[]",
+				required: true,
+			},
+			comments: {
+				type: "string[]",
+				required: true,
+			},
 		},
 	},
 	database: mongodbAdapter(database),
