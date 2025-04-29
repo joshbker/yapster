@@ -21,42 +21,34 @@ export const auth = betterAuth({
 			banner: {
 				type: "string",
 				required: true,
-				defaultValue: ""
 			},
 			pronouns: {
 				type: "string",
 				required: true,
-				defaultValue: ""
 			},
 			bio: {
 				type: "string",
 				required: true,
-				defaultValue: ""
 			},
 			verified: {
 				type: "boolean",
 				required: true,
-				defaultValue: false
 			},
 			following: {
 				type: "string[]",
 				required: true,
-				defaultValue: []
 			},
 			followers: {
 				type: "string[]",
 				required: true,
-				defaultValue: []
 			},
 			posts: {
 				type: "string[]",
 				required: true,
-				defaultValue: []
 			},
 			likes: {
 				type: "string[]",
 				required: true,
-				defaultValue: []
 			},
 		},
 	},
