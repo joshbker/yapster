@@ -1,4 +1,6 @@
-export const load = async ({ params, fetch }) => {
+import { error } from "@sveltejs/kit"
+
+export const load = async ({ params, locals, fetch }) => {
     console.log("PARAMS", params)
     const { username } = params
 
@@ -9,9 +11,7 @@ export const load = async ({ params, fetch }) => {
     }
 
     return {
-        params: {
-            username: params.username
-        },
+        locals: locals,
         user: await user.json()
     }
 }

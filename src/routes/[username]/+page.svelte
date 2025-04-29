@@ -21,17 +21,17 @@
                 <img src={$page.data.user.image} alt="Avatar" class="w-full h-full object-cover rounded-full" />
             </div>
             <div>
-                <div class="flex items-center gap-1">
+                <div class="flex items-center gap-2">
                     <h1 class="text-2xl font-bold">{$page.data.user.name ?? $page.data.user.username}</h1>
                     {#if $page.data.user.verified}
-                        <BadgeVerified size={6} />
+                        <BadgeVerified />
                     {/if}
                 </div>
                 <p class="text-sm text-gray-600">@{$page.data.user.username}</p>
             </div>
         </div>
         <div class="flex gap-2">
-            {#if $page.data.user.username === $page.data.params.username}
+            {#if $page.data.user.username === $page.data.locals.user.username}
                 <Button variant="outline" href="/account/profile">
                     <Pencil class="h-4 w-4" />
                 </Button>
