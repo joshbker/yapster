@@ -37,7 +37,27 @@ export const auth = betterAuth({
 				type: "boolean",
 				required: true,
 				defaultValue: false
-			}
+			},
+			following: {
+				type: "string[]",
+				required: true,
+				defaultValue: []
+			},
+			followers: {
+				type: "string[]",
+				required: true,
+				defaultValue: []
+			},
+			posts: {
+				type: "string[]",
+				required: true,
+				defaultValue: []
+			},
+			likes: {
+				type: "string[]",
+				required: true,
+				defaultValue: []
+			},
 		},
 	},
 	database: mongodbAdapter(database),

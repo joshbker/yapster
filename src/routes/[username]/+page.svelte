@@ -11,32 +11,40 @@
         Pencil,
     } from "lucide-svelte"
     import BadgeVerified from "$lib/component/BadgeVerified.svelte"
+    import { PUBLIC_DEFAULT_AVATAR_URL } from "$env/static/public"
+
+    $: user = $page.data.displayedUser
 </script>
 
-<div class="container max-w-4xl px-4 py-6">
-    <!-- Profile Header -->
-    <div class="flex items-start justify-between">
-        <div class="flex items-center gap-4">
-            <div class="h-24 w-24 rounded-full bg-gray-200">
-                <img src={$page.data.user.image} alt="Avatar" class="w-full h-full object-cover rounded-full" />
+<div class="relative lg:container lg:max-w-5xl lg:px-6 lg:py-6">
+    {#if user.banner}
+        <img src={user.banner} alt="Banner" class="w-full h-32 lg:h-48 object-cover lg:rounded-xl">
+    {:else}
+        <div class="w-full h-32 lg:h-48 lg:rounded-xl bg-gradient-to-br from-purple-500 to-blue-400"></div>
+    {/if}
+    <img src={user.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="absolute left-3 lg:left-14 -bottom-8 w-[5.5rem] h-[5.5rem] rounded-full object-cover border-4 border-background">
+</div>
+<div class="container max-w-4xl px-4 lg:px-0 py-6 mt-4">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-1.5">
+                <h1 class="text-lg font-bold">{user.name ?? user.username}</h1>
+                {#if user.verified}
+                    <BadgeVerified />
+                {/if}
             </div>
-            <div>
-                <div class="flex items-center gap-2">
-                    <h1 class="text-2xl font-bold">{$page.data.user.name ?? $page.data.user.username}</h1>
-                    {#if $page.data.user.verified}
-                        <BadgeVerified />
-                    {/if}
-                </div>
-                <p class="text-sm text-gray-600">@{$page.data.user.username}</p>
-            </div>
+            {#if user.name}
+                <p class="text-sm font-medium text-muted-foreground">{user.username}</p>
+            {/if}
         </div>
+
         <div class="flex gap-2">
-            {#if $page.data.user.username === $page.data.locals.user.username}
-                <Button variant="outline" href="/account/profile">
-                    <Pencil class="h-4 w-4" />
+            {#if user.username === $page.data.locals.user.username}
+                <Button variant="outline" class="px-1.5 h-[1.625rem]" href="/account/profile">
+                    <Pencil class="h-3 w-3" />
                 </Button>
-                <Button variant="outline" href="/account/settings">
-                    <Settings class="h-4 w-4" />
+                <Button variant="outline" class="px-1.5 h-[1.625rem]" href="/account/settings">
+                    <Settings class="h-3 w-3" />
                 </Button>
             {:else}
                 <Button variant="outline">

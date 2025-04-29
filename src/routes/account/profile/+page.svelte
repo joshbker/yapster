@@ -22,11 +22,11 @@
 
 <HeaderNavigation name="Edit Profile" submit={updateProfile} />
 <div class="relative">
-    <img src={banner} alt="Banner" class="w-full h-32 object-cover bg-gray-200">
+    <img src={banner} alt="Banner" class="w-full h-32 object-cover">
     <img 
         src={avatar} 
         alt="Avatar" 
-        class="absolute left-1/2 transform -translate-x-1/2 -bottom-8 w-24 h-24 rounded-full object-cover bg-gray-200 border-4 border-white"
+        class="absolute left-1/2 transform -translate-x-1/2 -bottom-8 w-24 h-24 rounded-full object-cover border-4 border-background"
     >
 </div>
 
