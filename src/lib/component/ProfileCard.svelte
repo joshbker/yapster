@@ -47,8 +47,8 @@
         </div>
 
         <div class="flex gap-2 mt-3">
-            <FollowActions {user} {viewer} />
-            <MessageActions {user} {viewer} />
+            <FollowActions {user} {viewer} iconOnly={false} className="w-full" />
+            <MessageActions {user} {viewer} iconOnly={false} className="w-full" />
         </div>
     </div>
 </a>

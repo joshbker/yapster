@@ -11,10 +11,23 @@
     export let initialTab = "following";
 
     let activeTab = initialTab;
+    let followingCount = 0;
+    let followersCount = 0;
 
     // Reset to initial tab when dialog opens
     $: if (open) {
         activeTab = initialTab;
+    }
+
+    // Update counts when promises change
+    $: {
+        followingPromise.then(users => {
+            followingCount = users?.length ?? 0;
+        });
+        
+        followersPromise.then(users => {
+            followersCount = users?.length ?? 0;
+        });
     }
 </script>
 
@@ -22,8 +35,14 @@
     <DialogContent class="w-[calc(100%-2rem)] sm:w-[28rem] h-[calc(100vh-8rem)] max-h-[46rem] my-4 rounded-xl flex flex-col p-2 [&>button]:hidden">
         <Tabs bind:value={activeTab} class="flex-1 flex flex-col">
             <TabsList class="grid w-full grid-cols-2">
-                <TabsTrigger value="following">Following</TabsTrigger>
-                <TabsTrigger value="followers">Followers</TabsTrigger>
+                <TabsTrigger value="following" class="flex items-center gap-2">
+                    <p>Following</p>
+                    <p class="text-sm text-muted-foreground">({followingCount})</p>
+                </TabsTrigger>
+                <TabsTrigger value="followers" class="flex items-center gap-2">
+                    <p>Followers</p>
+                    <p class="text-sm text-muted-foreground">({followersCount})</p>
+                </TabsTrigger>
             </TabsList>
             <TabsContent value="following" class="flex-1 overflow-y-auto">
                 {#await followingPromise}
