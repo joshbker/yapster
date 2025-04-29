@@ -11,6 +11,7 @@
 		"@internationalized/date": "^3.5.6",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
+		"@sveltejs/adapter-node": "^5.2.12",
 		"autoprefixer": "^10.4.20",
 		"bits-ui": "^0.21.16",
 		"formsnap": "^1.0.1",
@@ -27,7 +28,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@sveltejs/adapter-cloudflare": "^7.0.1",
 		"@sveltejs/adapter-node": "^5.2.12",
 		"apexcharts": "^4.1.0",
 		"better-auth": "^1.2.7",
