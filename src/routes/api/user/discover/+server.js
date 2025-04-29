@@ -16,6 +16,7 @@ export const GET = async ({ locals }) => {
         }
 
         return json(users.map(user => ({
+            id: user._id,
             username: user.username,
             name: user.name,
             image: user.image,

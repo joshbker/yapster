@@ -12,6 +12,7 @@ export const GET = async ({ params }) => {
         }
 
         return json({
+            id: user._id,
             username: user.username,
             name: user.name,
             image: user.image,
