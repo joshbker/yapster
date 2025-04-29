@@ -48,25 +48,23 @@
         'image/webp'
     ];
 
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB for banners
-    const AVATAR_MAX_SIZE = 1 * 1024 * 1024; // 1MB for avatars
+    const MAX_FILE_SIZE = 512 * 1024; // 512KB hard limit
 
     // Image compression options
-    const avatarCompressionOptions = {
-        maxSizeMB: 0.95, // Slightly under 1MB
-        maxWidthOrHeight: 400,
-        useWebWorker: true,
-        initialQuality: 0.8
-    };
-
-    const bannerCompressionOptions = {
-        maxSizeMB: 4.9, // Slightly under 5MB
+    const compressionOptions = {
+        maxSizeMB: 0.5, // 500KB (slightly under 512KB)
         maxWidthOrHeight: 1920,
         useWebWorker: true,
-        initialQuality: 0.8
+        initialQuality: 0.7
     };
 
-    function validateImageFile(file, isAvatar = false) {
+    // Special settings for avatars
+    const avatarOptions = {
+        ...compressionOptions,
+        maxWidthOrHeight: 400 // Smaller dimension for avatars
+    };
+
+    function validateImageFile(file) {
         if (!file) return { valid: false, error: 'No file selected' };
         
         if (!acceptedTypes.includes(file.type)) {
@@ -76,12 +74,11 @@
             };
         }
 
-        const maxSize = isAvatar ? AVATAR_MAX_SIZE : MAX_FILE_SIZE;
-        if (file.size > maxSize) {
+        if (file.size > MAX_FILE_SIZE) {
             return {
                 valid: false,
                 needsCompression: true,
-                error: `File too large. Maximum size is ${(maxSize / 1024 / 1024).toFixed(1)}MB. Current size: ${(file.size / 1024 / 1024).toFixed(1)}MB`
+                error: `File too large. Maximum size is 512KB. Current size: ${(file.size / 1024).toFixed(1)}KB`
             };
         }
 
@@ -90,13 +87,12 @@
 
     async function compressImage(file, isAvatar = false) {
         try {
-            const options = isAvatar ? avatarCompressionOptions : bannerCompressionOptions;
+            const options = isAvatar ? avatarOptions : compressionOptions;
             
             console.log('Starting compression:', {
                 originalSize: file.size,
-                maxAllowedSize: isAvatar ? AVATAR_MAX_SIZE : MAX_FILE_SIZE,
-                isAvatar,
-                targetSizeMB: options.maxSizeMB
+                maxAllowedSize: MAX_FILE_SIZE,
+                isAvatar
             });
 
             // Compress with the configured options
@@ -105,14 +101,14 @@
             console.log('Compression result:', {
                 originalSize: file.size,
                 compressedSize: compressedFile.size,
-                maxAllowedSize: isAvatar ? AVATAR_MAX_SIZE : MAX_FILE_SIZE,
+                maxAllowedSize: MAX_FILE_SIZE,
                 compressionRatio: (compressedFile.size / file.size * 100).toFixed(1) + '%'
             });
             
             // Validate the compressed file
-            const validation = validateImageFile(compressedFile, isAvatar);
+            const validation = validateImageFile(compressedFile);
             if (!validation.valid) {
-                throw new Error(`Could not compress image to required size. Final size: ${(compressedFile.size / 1024 / 1024).toFixed(1)}MB`);
+                throw new Error(`Could not compress image to required size. Final size: ${(compressedFile.size / 1024).toFixed(1)}KB`);
             }
 
             return compressedFile;
@@ -125,7 +121,7 @@
     async function processImageFile(file, isAvatar = false) {
         try {
             // First try basic validation
-            const initialValidation = validateImageFile(file, isAvatar);
+            const initialValidation = validateImageFile(file);
             
             // If file is valid and doesn't need compression, return as is
             if (initialValidation.valid) {
