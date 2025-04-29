@@ -27,29 +27,38 @@ export const PATCH = async ({ params, locals }) => {
         // Check if already following
         const isFollowing = userToFollow.followers.includes(currentUser.id)
         
-        if (isFollowing) {
-            // Unfollow: Remove IDs from both arrays
-            await User.updateOne(
-                { _id: userToFollow._id },
-                { $pull: { followers: currentUser.id } }
-            )
-            await User.updateOne(
-                { _id: currentUser.id },
-                { $pull: { following: userToFollow._id.toString() } }
-            )
-        } else {
-            // Follow: Add IDs to both arrays
-            await User.updateOne(
-                { _id: userToFollow._id },
-                { $addToSet: { followers: currentUser.id } }
-            )
-            await User.updateOne(
-                { _id: currentUser.id },
-                { $addToSet: { following: userToFollow._id.toString() } }
-            )
-        }
+        // Use bulkWrite for atomic operations on both users
+        await User.bulkWrite([
+            {
+                updateOne: {
+                    filter: { _id: userToFollow._id },
+                    update: isFollowing 
+                        ? { $pull: { followers: currentUser.id } }
+                        : { $addToSet: { followers: currentUser.id } }
+                }
+            },
+            {
+                updateOne: {
+                    filter: { _id: currentUser.id },
+                    update: isFollowing
+                        ? { $pull: { following: userToFollow._id.toString() } }
+                        : { $addToSet: { following: userToFollow._id.toString() } }
+                }
+            }
+        ])
 
-        return json({ success: true, following: !isFollowing })
+        // Get updated user data for accurate counts
+        const [updatedUserToFollow, updatedCurrentUser] = await Promise.all([
+            User.findById(userToFollow._id).lean(),
+            User.findById(currentUser.id).lean()
+        ])
+
+        return json({
+            success: true,
+            following: !isFollowing,
+            followerCount: updatedUserToFollow.followers.length,
+            followingCount: updatedCurrentUser.following.length
+        })
     } catch (err) {
         console.error(err)
         throw error(500, "Failed to follow/unfollow user")
