@@ -11,7 +11,7 @@ export const load = async ({ params, locals, fetch }) => {
     }
 
     return {
-        locals: locals,
+        user: locals.user,
         displayedUser: await user.json()
     }
 }

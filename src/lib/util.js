@@ -2,7 +2,7 @@ import { clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { cubicOut } from "svelte/easing"
 import { error } from "@sveltejs/kit"
-import { goto } from "$app/navigation"
+import { PUBLIC_BASE_URL } from "$env/static/public"
 
 export function handleError(err) {
 	if (err.code == 117 || err.code == 11000) error(409, "Another user already has a link with that shortcut, try another one.")
@@ -120,14 +120,14 @@ export function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
-export async function getUserById(id, fetch) {
-    const response = await fetch(`/api/user/id/${id}`)
+export async function getUserById(id) {
+    const response = await fetch(`${PUBLIC_BASE_URL}/api/user/id/${id}`)
     const data = await response.json()
     return data
 }
 
-export async function getUserByUsername(username, fetch) {
-    const response = await fetch(`/api/user/username/${username}`)
+export async function getUserByUsername(username) {
+    const response = await fetch(`${PUBLIC_BASE_URL}/api/user/username/${username}`)
     const data = await response.json()
     return data
 }

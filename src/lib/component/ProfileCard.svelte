@@ -1,0 +1,54 @@
+<script>
+    import { PUBLIC_DEFAULT_AVATAR_URL } from "$env/static/public"
+    import BadgeVerified from "$lib/component/BadgeVerified.svelte"
+    import ProfileActions from "$lib/component/ProfileActions.svelte"
+    import FollowActions from "$lib/component/FollowActions.svelte"
+    import MessageActions from "$lib/component/MessageActions.svelte"
+    import ProfileStats from "$lib/component/ProfileStats.svelte"
+
+    export let user;
+    export let viewer;
+</script>
+
+<a class="border rounded-lg flex flex-col" href={`/${user.username}`}>
+    <div class="relative">
+        {#if user.banner}
+            <img src={user.banner} alt="Banner" class="w-full h-24 object-cover rounded-t-lg">
+        {:else}
+            <div class="w-full h-24 bg-gradient-to-br from-purple-500 to-blue-400 rounded-t-lg"></div>
+        {/if}
+        <img 
+            src={user.image ?? PUBLIC_DEFAULT_AVATAR_URL} 
+            alt={user.username}
+            class="absolute left-4 -bottom-6 w-16 h-16 rounded-full object-cover border-[3px] border-background"
+        >
+    </div>
+    
+    <div class="p-6 pt-6 flex flex-col">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="flex items-center gap-1.5">
+                    <h2 class="font-semibold">{user.name ?? user.username}</h2>
+                    {#if user.verified}
+                        <BadgeVerified />
+                    {/if}
+                </div>
+                {#if user.name}
+                    <p class="text-sm font-medium text-muted-foreground">{user.username}</p>
+                {/if}
+            </div>
+            <ProfileActions {user} {viewer} />
+        </div>
+
+        <p class="text-sm">{user.bio ?? "No bio yet."}</p>
+
+        <div class="mt-3">
+            <ProfileStats {user} />
+        </div>
+
+        <div class="flex gap-2 mt-3">
+            <FollowActions {user} {viewer} />
+            <MessageActions {user} {viewer} />
+        </div>
+    </div>
+</a>
