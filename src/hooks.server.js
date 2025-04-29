@@ -4,7 +4,18 @@ import { error, redirect } from "@sveltejs/kit";
 
 const unauthenticatedRoutes = ["/account/create", "/account/login", "/account/forgot-password"];
 
+// Configure request size limits
+const MAX_REQUEST_SIZE = 10 * 1024 * 1024; // 10MB
+
 export async function handle({ event, resolve }) {
+    // Check content length for POST requests
+    if (event.request.method === 'POST') {
+        const contentLength = parseInt(event.request.headers.get('content-length') || '0');
+        if (contentLength > MAX_REQUEST_SIZE) {
+            throw error(413, `Request entity too large. Maximum size is ${MAX_REQUEST_SIZE / (1024 * 1024)}MB`);
+        }
+    }
+
     const session = await auth.api.getSession({ headers: event.request.headers });
     const pathname = event.url.pathname;
     
