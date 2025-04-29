@@ -41,7 +41,7 @@
     {:else}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {#each users as user}
-                <div class="border rounded-lg flex flex-col">
+                <a class="border rounded-lg flex flex-col" href={`/${user.username}`}>
                     <div class="relative">
                         {#if user.banner}
                             <img src={user.banner} alt="Banner" class="w-full h-24 object-cover rounded-t-lg">
@@ -106,17 +106,25 @@
                         </div>
 
                         <div class="flex gap-2 mt-3">
-                            <Button class="flex-1 h-8 flex items-center justify-center gap-1.5">
+                            <Button class="flex-1 h-8 flex items-center justify-center gap-1.5" on:click={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                alert("Follow");
+                            }}>
                                 <UserPlus class="h-4 w-4" />
                                 <span>Follow</span>
                             </Button>
-                            <Button variant="outline" class="flex-1 h-8 flex items-center justify-center gap-1.5">
+                            <Button variant="outline" class="flex-1 h-8 flex items-center justify-center gap-1.5" on:click={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                alert("Message");
+                            }}>
                                 <MessageSquare class="h-4 w-4" />
                                 <span>Message</span>
                             </Button>
                         </div>
                     </div>
-                </div>
+                </a>
             {/each}
         </div>
     {/if}
