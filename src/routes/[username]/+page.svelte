@@ -13,6 +13,23 @@
     $: viewer = $page.data.user
 </script>
 
+<svelte:head>
+    <title>{user.name ?? user.username}</title>
+    <meta property="og:title" content="Yapster" />
+    <meta property="og:type" content="profile" />
+    {#if user.banner}
+        <meta property="og:image" content={user.banner} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+    {/if}
+    <meta property="og:image" content={user.image ?? PUBLIC_DEFAULT_AVATAR_URL} />
+    <meta property="og:image:width" content="400" />
+    <meta property="og:image:height" content="400" />
+    <meta property="og:url" content={$page.url.href} />
+    <meta property="og:description" content={user.bio ?? `Check out ${user.username}'s profile`} />
+    <meta name="twitter:card" content="summary_large_image" />
+</svelte:head>
+
 <div class="relative lg:container lg:max-w-5xl lg:px-6 lg:py-6">
     {#if user.banner}
         <img src={user.banner} alt="Banner" class="w-full h-32 lg:h-48 object-cover lg:rounded-xl">
