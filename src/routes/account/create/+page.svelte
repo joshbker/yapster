@@ -37,6 +37,8 @@
 			following: [],
 			posts: [],
 			likes: [],
+			saves: [],
+			comments: [],
 
 			callbackURL: "/"
 		}, {
