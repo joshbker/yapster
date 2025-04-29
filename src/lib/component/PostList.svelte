@@ -58,7 +58,7 @@
 {:else}
     <div class="flex flex-col gap-4 max-w-xl mx-auto">
         {#each posts as post (post.id)}
-            <PostCard {post} {user} {viewer} />
+            <PostCard {post} author={user} {viewer} />
         {/each}
     </div>
 {/if} 

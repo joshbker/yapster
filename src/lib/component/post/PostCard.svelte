@@ -9,7 +9,7 @@
     import { fade } from 'svelte/transition';
 
     export let post;
-    export let user;
+    export let author;
     export let viewer;
 
     let currentPageIndex = 0;
@@ -58,17 +58,17 @@
     <div class="flex items-start gap-3 flex-col">
         <div class="flex items-start justify-between w-full">
             <div class="flex items-start gap-2">
-                <img src={user.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="w-10 h-10 rounded-full object-cover" />
+                <img src={author.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="w-10 h-10 rounded-full object-cover" />
                 <div class="flex flex-col">
                     <div class="flex items-center gap-2.5">
                         <div class="flex items-center gap-1.5">
-                            <span class="font-semibold">{user.name ?? user.username}</span>
-                            {#if user.verified}
+                            <span class="font-semibold">{author.name ?? author.username}</span>
+                            {#if author.verified}
                                 <BadgeVerified size={16} />
                             {/if}
                         </div>
-                        {#if user.name}
-                            <p class="text-sm font-medium text-muted-foreground">{user.username}</p>
+                        {#if author.name}
+                            <p class="text-sm font-medium text-muted-foreground">{author.username}</p>
                         {/if}
                     </div>
                     {#if post.content.text}
