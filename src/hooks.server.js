@@ -26,5 +26,9 @@ export async function handle({ event, resolve }) {
         throw redirect(302, "/");
     }
 
+    if (!unauthenticatedRoutes.includes(event.url.pathname) && !session) {
+        throw redirect(302, "/account/login");
+    }
+
     return svelteKitHandler({ event, resolve, auth });
 }
