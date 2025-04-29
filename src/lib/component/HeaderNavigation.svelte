@@ -1,0 +1,19 @@
+<script>
+    import { ChevronLeft } from 'lucide-svelte';
+    import { Button } from '$lib/component/ui/button';
+
+    export let name = "";
+    export let submit = undefined;
+</script>
+
+<div class="relative flex items-center justify-center h-10">
+    <Button variant="ghost" class="absolute left-0 px-2 h-7" on:click={() => window.history.back()}>
+        <ChevronLeft class="h-5 w-5" />
+    </Button>
+    <h1 class="text-sm font-semibold">{name}</h1>
+    {#if submit}
+        <Button variant="ghost" class="absolute right-2 px-2 h-7 text-primary" on:click={submit}>
+            Save
+        </Button>
+    {/if}
+</div>

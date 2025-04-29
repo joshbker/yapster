@@ -7,7 +7,8 @@
         UserPlus,
         Grid,
         BookmarkIcon,
-        Heart
+        Heart,
+        Pencil
     } from "lucide-svelte"
 </script>
 
@@ -25,9 +26,11 @@
         </div>
         <div class="flex gap-2">
             {#if $page.data.params.username === $page.data.user.username}
+                <Button variant="outline" href="/account/profile">
+                    <Pencil class="h-4 w-4" />
+                </Button>
                 <Button variant="outline" href="/account/settings">
-                    <Settings class="mr-2 h-4 w-4" />
-                    Edit Profile
+                    <Settings class="h-4 w-4" />
                 </Button>
             {:else}
                 <Button variant="outline">

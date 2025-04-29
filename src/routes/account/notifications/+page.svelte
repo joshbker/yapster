@@ -1,1 +1,5 @@
-<h1>notifications</h1>
+<script>
+    import HeaderNavigation from '$lib/component/HeaderNavigation.svelte';
+</script>
+
+<HeaderNavigation name="Notifications" />

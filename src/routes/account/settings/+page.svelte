@@ -8,10 +8,9 @@
     import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '$lib/component/ui/alert-dialog';
     import { client } from '$lib/auth/auth-client';
     import { page } from '$app/stores';
-
+    import { toast } from "svelte-sonner";
+    import HeaderNavigation from '$lib/component/HeaderNavigation.svelte';
     let isLoading = false;
-    let error = '';
-    let success = '';
 
     // Profile form
     let username = $page.data.user.username;
@@ -26,107 +25,119 @@
     let currentEmailPassword = '';
 
     async function updateProfile() {
-        error = '';
-        success = '';
         isLoading = true;
 
-        try {
-            // Add profile update logic here when available in BetterAuth
-            success = 'Profile updated successfully';
-        } catch (e) {
-            error = e.message || 'Failed to update profile';
-        } finally {
-            isLoading = false;
-        }
+        await client.updateUser({
+            username: username
+        }, {
+            onError: (error) => {
+                toast.error(error.message || 'Failed to update profile');
+                isLoading = false;
+            },
+            onSuccess: () => {
+                toast.success('Profile updated successfully');
+                isLoading = false;
+            }
+        })
     }
 
     async function changePassword() {
-        error = '';
-        success = '';
         isLoading = true;
 
         if (newPassword !== confirmNewPassword) {
-            error = 'New passwords do not match';
+            toast.error('New passwords do not match');
             isLoading = false;
             return;
         }
 
-        try {
-            await client.user.changePassword({
-                currentPassword,
-                newPassword
-            });
-            success = 'Password changed successfully';
-            currentPassword = '';
-            newPassword = '';
-            confirmNewPassword = '';
-        } catch (e) {
-            error = e.message || 'Failed to change password';
-        } finally {
-            isLoading = false;
-        }
+        await client.verifyPassword({
+            email: $page.data.user.email,
+            password: currentPassword
+        }, {
+            onError: (error) => {
+                console.error(error);
+                toast.error(error.message || 'Failed to verify password');
+                isLoading = false;
+            },
+            onSuccess: async () => {
+                await client.changePassword({
+                    currentPassword,
+                    newPassword,
+                    revokeOtherSessions: true
+                }, {
+                    onError: (error) => {
+                        console.error(error);
+                        toast.error(error.message || 'Failed to change password');
+                        isLoading = false;
+                    },
+                    onSuccess: () => {
+                        toast.success('Password changed successfully');
+                        currentPassword = '';
+                        newPassword = '';
+                        confirmNewPassword = '';
+                        isLoading = false;
+                    }
+                })
+            }
+        })
     }
 
     async function changeEmail() {
-        error = '';
-        success = '';
         isLoading = true;
 
-        try {
-            await client.user.changeEmail({
-                email: newEmail,
-                password: currentEmailPassword
-            });
-            success = 'Email change request sent. Please check your new email for verification.';
-            newEmail = '';
-            currentEmailPassword = '';
-        } catch (e) {
-            error = e.message || 'Failed to change email';
-        } finally {
-            isLoading = false;
-        }
+        await client.verifyPassword({
+            email: $page.data.user.email,
+            password: currentPassword
+        }, {
+            onError: (error) => {
+                console.error(error);
+                toast.error(error.message || 'Failed to verify password');
+                isLoading = false;
+            },
+            onSuccess: async () => {
+                await client.changeEmail({
+                    newEmail
+                }, {
+                    onError: (error) => {   
+                        toast.error(error.message || 'Failed to change email');
+                        isLoading = false;
+                    },
+                    onSuccess: () => {
+                        toast.success('Email change request sent. Please check your new email for verification.');
+                        newEmail = '';
+                        currentEmailPassword = '';
+                        isLoading = false;
+                    }
+                })
+            }
+        })
     }
 
     async function deleteAccount() {
         try {
-            await client.user.delete();
+            await client.delete();
             window.location.href = '/';
         } catch (e) {
-            error = e.message || 'Failed to delete account';
+            toast.error(e.message || 'Failed to delete account');
         }
     }
 
     async function handleLogout() {
-        error = '';
-        success = '';
         isLoading = true;
 
         try {
             await client.signOut();
             window.location.href = '/';
         } catch (e) {
-            error = e.message || 'Failed to log out';
+            toast.error(e.message || 'Failed to log out');
         } finally {
             isLoading = false;
         }
     }
 </script>
 
+<HeaderNavigation name="Account Settings" />
 <div class="container mx-auto px-4 py-8 max-w-2xl">
-    <h1 class="text-3xl font-bold mb-6">Account Settings</h1>
-
-    {#if error}
-        <div class="bg-destructive/15 text-destructive p-3 rounded-md mb-4">
-            {error}
-        </div>
-    {/if}
-
-    {#if success}
-        <div class="bg-green-500/15 text-green-600 p-3 rounded-md mb-4">
-            {success}
-        </div>
-    {/if}
-
     <Tabs defaultValue="profile" class="w-full">
         <TabsList class="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="profile">Profile</TabsTrigger>
@@ -242,7 +253,7 @@
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction variant="destructive" on:click={deleteAccount}>
+                                <AlertDialogAction class="bg-destructive text-destructive-foreground hover:bg-destructive/90" on:click={deleteAccount}>
                                     Delete Account
                                 </AlertDialogAction>
                             </AlertDialogFooter>
