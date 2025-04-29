@@ -119,3 +119,15 @@ const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 export function isValidEmail(email) {
     return emailRegex.test(email);
 }
+
+export async function getUserById(id, fetch) {
+    const response = await fetch(`/api/user/id/${id}`)
+    const data = await response.json()
+    return data
+}
+
+export async function getUserByUsername(username, fetch) {
+    const response = await fetch(`/api/user/username/${username}`)
+    const data = await response.json()
+    return data
+}
