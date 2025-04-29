@@ -9,8 +9,8 @@
         BookmarkIcon,
         Heart,
         Pencil,
-        BadgeCheck
     } from "lucide-svelte"
+    import BadgeVerified from "$lib/component/BadgeVerified.svelte"
 </script>
 
 <div class="container max-w-4xl px-4 py-6">
@@ -24,7 +24,7 @@
                 <div class="flex items-center gap-1">
                     <h1 class="text-2xl font-bold">{$page.data.user.name ?? $page.data.user.username}</h1>
                     {#if $page.data.user.verified}
-                        <BadgeCheck class="h-6 w-6 fill-primary text-white" />
+                        <BadgeVerified size={6} />
                     {/if}
                 </div>
                 <p class="text-sm text-gray-600">@{$page.data.user.username}</p>
