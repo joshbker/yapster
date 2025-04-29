@@ -47,7 +47,7 @@
             <ProfileActions {user} {viewer} />
         </div>
 
-        <p class="text-sm whitespace-pre-wrap">{user.bio ?? "No bio yet."}</p>
+        <p class="text-sm whitespace-pre-wrap line-clamp-1">{user.bio ?? "No bio yet."}</p>
 
         <div class="mt-3">
             <ProfileStats {user} {viewer} />
