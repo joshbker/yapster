@@ -11,6 +11,14 @@ const userSchema = new Schema({
         type: String,
         required: true,
         unique: true
+    },
+    followers: {
+        type: [String],
+        default: []
+    },
+    following: {
+        type: [String],
+        default: []
     }
 }, {
     versionKey: false

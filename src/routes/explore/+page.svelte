@@ -9,8 +9,9 @@
 
     $: viewer = $page.data.user
 
-    onMount(async () => {
+    async function fetchUsers() {
         try {
+            loading = true;
             const response = await fetch('/api/user/discover');
             if (!response.ok) throw new Error('Failed to fetch users');
             users = await response.json();
@@ -19,6 +20,10 @@
         } finally {
             loading = false;
         }
+    }
+
+    onMount(() => {
+        fetchUsers();
     })
 </script>
 

@@ -7,27 +7,16 @@
     export let open = false;
     export let followingPromise;
     export let followersPromise;
+    export let followingCount;
+    export let followersCount;
     export let onClose = () => {};
     export let initialTab = "following";
 
     let activeTab = initialTab;
-    let followingCount = 0;
-    let followersCount = 0;
 
     // Reset to initial tab when dialog opens
     $: if (open) {
         activeTab = initialTab;
-    }
-
-    // Update counts when promises change
-    $: {
-        followingPromise.then(users => {
-            followingCount = users?.length ?? 0;
-        });
-        
-        followersPromise.then(users => {
-            followersCount = users?.length ?? 0;
-        });
     }
 </script>
 
@@ -71,7 +60,7 @@
                                             {/if}
                                         </div>
                                         {#if followingUser.name}
-                                            <p class="text-sm text-muted-foreground">@{followingUser.username}</p>
+                                            <p class="text-sm text-muted-foreground">{followingUser.username}</p>
                                         {/if}
                                     </div>
                                 </a>
