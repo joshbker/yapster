@@ -87,7 +87,15 @@
                 {:else}
                     <div class="space-y-2 p-1">
                         {#each followingUsers as user}
-                            <ProfileCardSlim {user} {viewer} />
+                            <button 
+                                class="w-full"
+                                on:click={() => {
+                                    onClose();
+                                    open = false;
+                                }}
+                            >
+                                <ProfileCardSlim {user} {viewer} />
+                            </button>
                         {/each}
                         
                         {#if isLoadingMore}
@@ -111,7 +119,15 @@
                 {:else}
                     <div class="space-y-2 p-1">
                         {#each followerUsers as user}
-                            <ProfileCardSlim {user} {viewer} />
+                            <button 
+                                class="w-full"
+                                on:click={() => {
+                                    onClose();
+                                    open = false;
+                                }}
+                            >
+                                <ProfileCardSlim {user} {viewer} />
+                            </button>
                         {/each}
                         
                         {#if isLoadingMore}
