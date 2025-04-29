@@ -5,13 +5,15 @@
         Settings,
         MessageSquare,
         UserPlus,
-        Grid,
-        BookmarkIcon,
-        Heart,
         Pencil,
+        Ellipsis,
+        Flag,
+        Ban,
+        BellOff
     } from "lucide-svelte"
     import BadgeVerified from "$lib/component/BadgeVerified.svelte"
     import { PUBLIC_DEFAULT_AVATAR_URL } from "$env/static/public"
+    import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "$lib/component/ui/dropdown-menu"
 
     $: user = $page.data.displayedUser
 </script>
@@ -22,9 +24,9 @@
     {:else}
         <div class="w-full h-32 lg:h-48 lg:rounded-xl bg-gradient-to-br from-purple-500 to-blue-400"></div>
     {/if}
-    <img src={user.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="absolute left-3 lg:left-14 -bottom-8 w-[5.5rem] h-[5.5rem] rounded-full object-cover border-4 border-background">
+    <img src={user.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="absolute left-3 lg:left-14 -bottom-2 w-24 h-24 rounded-full object-cover border-4 border-background">
 </div>
-<div class="container max-w-4xl px-4 lg:px-0 py-6 mt-4">
+<div class="container max-w-4xl px-4 lg:px-0 py-2">
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
             <div class="flex items-center gap-1.5">
@@ -40,70 +42,55 @@
 
         <div class="flex gap-2">
             {#if user.username === $page.data.locals.user.username}
-                <Button variant="outline" class="px-1.5 h-[1.625rem]" href="/account/profile">
-                    <Pencil class="h-3 w-3" />
+                <Button variant="outline" class="px-2 h-8 flex items-center gap-1.5" href="/account/profile">
+                    <Pencil class="h-4 w-4" />
+                    <p class="hidden lg:block">Edit Profile</p>
                 </Button>
-                <Button variant="outline" class="px-1.5 h-[1.625rem]" href="/account/settings">
-                    <Settings class="h-3 w-3" />
+                <Button variant="outline" class="px-2 h-8 flex items-center gap-1.5" href="/account/settings">
+                    <Settings class="h-4 w-4" />
+                    <p class="hidden lg:block">Settings</p>
                 </Button>
             {:else}
-                <Button variant="outline">
-                    <MessageSquare class="mr-2 h-4 w-4" />
-                    Message
+                <Button class="px-2 h-8 flex items-center gap-1.5">
+                    <UserPlus class="h-4 w-4" />
+                    <p class="hidden lg:block">Follow</p>
                 </Button>
-                <Button>
-                    <UserPlus class="mr-2 h-4 w-4" />
-                    Follow
+                <Button variant="outline" class="px-2 h-8 flex items-center gap-1.5">
+                    <MessageSquare class="h-4 w-4" />
+                    <p class="hidden lg:block">Message</p>
                 </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger as-child>
+                        <Button variant="outline" class="px-2 h-8">
+                            <Ellipsis class="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem class="gap-2 !text-destructive">
+                            <Flag class="h-4 w-4" />
+                            <p>Report</p>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem class="gap-2 !text-destructive">
+                            <Ban class="h-4 w-4" />
+                            <p>Block</p>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem class="gap-2">
+                            <BellOff class="h-4 w-4" />
+                            <p>Ignore</p>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             {/if}
         </div>
     </div>
 
-    <!-- Profile Stats -->
-    <div class="mt-6 flex gap-6 border-y py-4">
-        <div class="text-center">
-            <div class="font-bold">0</div>
-            <div class="text-sm text-gray-600">Posts</div>
-        </div>
-        <div class="text-center">
-            <div class="font-bold">0</div>
-            <div class="text-sm text-gray-600">Followers</div>
-        </div>
-        <div class="text-center">
-            <div class="font-bold">0</div>
-            <div class="text-sm text-gray-600">Following</div>
-        </div>
+    <div class="mt-2">
+        <p class="text-sm">{user.bio ?? "No bio yet."}</p>
     </div>
 
-    <!-- Profile Bio -->
-    <div class="mt-4">
-        <p class="text-sm">No bio yet.</p>
-    </div>
-
-    <!-- Profile Tabs -->
-    <div class="mt-6 border-b">
-        <div class="flex gap-6">
-            <Button variant="ghost" class="flex items-center gap-2">
-                <Grid class="h-4 w-4" />
-                Posts
-            </Button>
-            <Button variant="ghost" class="flex items-center gap-2">
-                <Heart class="h-4 w-4" />
-                Liked
-            </Button>
-            <Button variant="ghost" class="flex items-center gap-2">
-                <BookmarkIcon class="h-4 w-4" />
-                Saved
-            </Button>
-        </div>
-    </div>
-
-    <!-- Profile Content -->
-    <div class="mt-6">
-        <div class="grid grid-cols-3 gap-1">
-            <div class="aspect-square bg-gray-100"></div>
-            <div class="aspect-square bg-gray-100"></div>
-            <div class="aspect-square bg-gray-100"></div>
-        </div>
+    <div class="mt-4 flex gap-6">
+        <p class="text-sm text-muted-foreground"><span class="font-semibold">{user.following?.length ?? 0}</span> following</p>
+        <p class="text-sm text-muted-foreground"><span class="font-semibold">{user.followers?.length ?? 0}</span> followers</p>
+        <p class="text-sm text-muted-foreground"><span class="font-semibold">{user.posts?.length ?? 0}</span> posts</p>
     </div>
 </div>

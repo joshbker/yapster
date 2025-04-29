@@ -64,7 +64,7 @@
 		--accent: 0 0% 14.9%;
 		--accent-foreground: 0 0% 98%;
 
-		--destructive: 0 62.8% 30.6%;
+		--destructive: 0 85% 65%; /* Changed to a lighter, more pastel red */
 		--destructive-foreground: 0 0% 98%;
 
 		--ring: 0 0% 83.1%;
