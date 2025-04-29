@@ -15,6 +15,7 @@
     let currentPageIndex = 0;
     let showCounter = false;
     let counterTimeout;
+    let isSwiping = false;
 
     function showCounterTemporarily() {
         showCounter = true;
@@ -22,6 +23,20 @@
         counterTimeout = setTimeout(() => {
             showCounter = false;
         }, 3000);
+    }
+
+    function handleTouchStart() {
+        isSwiping = true;
+    }
+
+    function handleTouchEnd() {
+        isSwiping = false;
+    }
+
+    function handleTouchMove(e) {
+        if (isSwiping) {
+            e.preventDefault();
+        }
     }
 
     onMount(() => {
@@ -50,7 +65,7 @@
     {#if post.content.items?.length}
         <div 
             class="absolute inset-0 bg-cover bg-center -z-10"
-            style="background-image: url('{post.content.items[0]}'); filter: blur(16px); transform: scale(1.1);"
+            style="background-image: url('{post.content.items[currentPageIndex]}'); filter: blur(16px); transform: scale(1.1);"
         />
         <div class="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.6)_0%,transparent_50%,rgba(0,0,0,0.6)_100%)] -z-10" />
     {/if}
@@ -94,7 +109,9 @@
                             id="carousel-{post.id}"
                             class="w-full aspect-square relative"
                             on:mouseenter={showCounterTemporarily}
-                            on:touchstart={showCounterTemporarily}
+                            on:touchstart={(e) => { showCounterTemporarily(); handleTouchStart(); }}
+                            on:touchend={handleTouchEnd}
+                            on:touchmove|preventDefault={handleTouchMove}
                             role="button"
                             tabindex="0"
                         >
@@ -105,10 +122,7 @@
                                 draggable="false"
                             >
                             {#if post.content.items.length > 1 && showCounter}
-                                <div 
-                                    class="absolute top-2 right-2 bg-black/50 opacity-70 px-2 py-1 rounded-xl text-white text-xs"
-                                    transition:fade
-                                >
+                                <div class="absolute top-2 right-2 bg-black/50 opacity-70 px-2 py-1 rounded-xl text-white text-xs" transition:fade>
                                     {currentPageIndex + 1}/{post.content.items.length}
                                 </div>
                             {/if}
