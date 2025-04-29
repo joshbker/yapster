@@ -7,9 +7,15 @@ export const GET = async ({ locals }) => {
     }
 
     try {
-        const users = await User.find({
-            _id: { $ne: locals.user.id }
-        }).lean()
+        const users = await User.aggregate([
+            { $match: { _id: { $ne: locals.user.id } } },
+            { 
+                $addFields: {
+                    followersCount: { $size: "$followers" }
+                }
+            },
+            { $sort: { followersCount: -1 } }
+        ])
         
         if (!users) {
             throw error(404, "Users not found")
