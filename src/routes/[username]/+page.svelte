@@ -8,7 +8,8 @@
         Grid,
         BookmarkIcon,
         Heart,
-        Pencil
+        Pencil,
+        BadgeCheck
     } from "lucide-svelte"
 </script>
 
@@ -16,16 +17,21 @@
     <!-- Profile Header -->
     <div class="flex items-start justify-between">
         <div class="flex items-center gap-4">
-            <div class="h-20 w-20 rounded-full bg-gray-200">
-                <!-- Profile picture placeholder -->
+            <div class="h-24 w-24 rounded-full bg-gray-200">
+                <img src={$page.data.user.image} alt="Avatar" class="w-full h-full object-cover rounded-full" />
             </div>
             <div>
-                <h1 class="text-2xl font-bold">{$page.data.params.username}</h1>
-                <p class="text-sm text-gray-600">@{$page.data.params.username}</p>
+                <div class="flex items-center gap-1">
+                    <h1 class="text-2xl font-bold">{$page.data.user.name ?? $page.data.user.username}</h1>
+                    {#if $page.data.user.verified}
+                        <BadgeCheck class="h-6 w-6 fill-primary text-white" />
+                    {/if}
+                </div>
+                <p class="text-sm text-gray-600">@{$page.data.user.username}</p>
             </div>
         </div>
         <div class="flex gap-2">
-            {#if $page.data.params.username === $page.data.user.username}
+            {#if $page.data.user.username === $page.data.params.username}
                 <Button variant="outline" href="/account/profile">
                     <Pencil class="h-4 w-4" />
                 </Button>
