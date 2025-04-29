@@ -42,6 +42,23 @@ export async function POST({ request, url, locals }) {
             }, { status: 400 });
         }
 
+        // Validate file size
+        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB for banners
+        const AVATAR_MAX_SIZE = 1 * 1024 * 1024; // 1MB for avatars
+
+        const maxSize = isAvatar ? AVATAR_MAX_SIZE : MAX_FILE_SIZE;
+        if (imageFile.size > maxSize) {
+            console.error('File too large:', {
+                providedSize: imageFile.size,
+                maxSize,
+                isAvatar
+            });
+            return json({ 
+                error: `Image file is too large. Maximum size is ${isAvatar ? '1MB for avatars' : '5MB for banners'}.`,
+                maxSizeKB: maxSize / 1024
+            }, { status: 400 });
+        }
+
         // Validate environment variables
         if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_IMAGE_API_KEY) {
             console.error('Missing Cloudflare credentials');

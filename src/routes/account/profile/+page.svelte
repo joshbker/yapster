@@ -8,7 +8,8 @@
     import { Textarea } from "$lib/component/ui/textarea";
     import { client } from '$lib/auth/auth-client';
     import { toast } from 'svelte-sonner';
-    import { Pencil } from 'lucide-svelte';
+    import { Pencil, Loader2 } from 'lucide-svelte';
+    import imageCompression from 'browser-image-compression';
 
     // Store original values
     const originalData = {
@@ -36,6 +37,8 @@
     let selectedBannerFile = null;
     let previewAvatarUrl = avatar;
     let previewBannerUrl = banner;
+    let isProcessingAvatar = false;
+    let isProcessingBanner = false;
 
     const acceptedTypes = [
         'image/jpeg',
@@ -45,7 +48,25 @@
         'image/webp'
     ];
 
-    function validateImageFile(file) {
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB for banners
+    const AVATAR_MAX_SIZE = 1 * 1024 * 1024; // 1MB for avatars
+
+    // Image compression options
+    const avatarCompressionOptions = {
+        maxSizeMB: 0.95, // Slightly under 1MB
+        maxWidthOrHeight: 400,
+        useWebWorker: true,
+        initialQuality: 0.8
+    };
+
+    const bannerCompressionOptions = {
+        maxSizeMB: 4.9, // Slightly under 5MB
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+        initialQuality: 0.8
+    };
+
+    function validateImageFile(file, isAvatar = false) {
         if (!file) return { valid: false, error: 'No file selected' };
         
         if (!acceptedTypes.includes(file.type)) {
@@ -55,7 +76,111 @@
             };
         }
 
+        const maxSize = isAvatar ? AVATAR_MAX_SIZE : MAX_FILE_SIZE;
+        if (file.size > maxSize) {
+            return {
+                valid: false,
+                needsCompression: true,
+                error: `File too large. Maximum size is ${(maxSize / 1024 / 1024).toFixed(1)}MB. Current size: ${(file.size / 1024 / 1024).toFixed(1)}MB`
+            };
+        }
+
         return { valid: true };
+    }
+
+    async function compressImage(file, isAvatar = false) {
+        try {
+            const options = isAvatar ? avatarCompressionOptions : bannerCompressionOptions;
+            
+            console.log('Starting compression:', {
+                originalSize: file.size,
+                maxAllowedSize: isAvatar ? AVATAR_MAX_SIZE : MAX_FILE_SIZE,
+                isAvatar,
+                targetSizeMB: options.maxSizeMB
+            });
+
+            // Compress with the configured options
+            const compressedFile = await imageCompression(file, options);
+            
+            console.log('Compression result:', {
+                originalSize: file.size,
+                compressedSize: compressedFile.size,
+                maxAllowedSize: isAvatar ? AVATAR_MAX_SIZE : MAX_FILE_SIZE,
+                compressionRatio: (compressedFile.size / file.size * 100).toFixed(1) + '%'
+            });
+            
+            // Validate the compressed file
+            const validation = validateImageFile(compressedFile, isAvatar);
+            if (!validation.valid) {
+                throw new Error(`Could not compress image to required size. Final size: ${(compressedFile.size / 1024 / 1024).toFixed(1)}MB`);
+            }
+
+            return compressedFile;
+        } catch (error) {
+            console.error('Error compressing image:', error);
+            throw error;
+        }
+    }
+
+    async function processImageFile(file, isAvatar = false) {
+        try {
+            // First try basic validation
+            const initialValidation = validateImageFile(file, isAvatar);
+            
+            // If file is valid and doesn't need compression, return as is
+            if (initialValidation.valid) {
+                return file;
+            }
+            
+            // If file needs compression or is too large, try to compress it
+            if (initialValidation.needsCompression || !initialValidation.valid) {
+                const compressedFile = await compressImage(file, isAvatar);
+                return compressedFile;
+            }
+            
+            throw new Error(initialValidation.error);
+        } catch (error) {
+            toast.error(error.message || 'Failed to process image');
+            return null;
+        }
+    }
+
+    async function handleAvatarFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            isProcessingAvatar = true;
+            const processedFile = await processImageFile(file, true);
+            if (processedFile) {
+                selectedAvatarFile = processedFile;
+                previewAvatarUrl = URL.createObjectURL(processedFile);
+            }
+        } catch (error) {
+            console.error('Avatar processing error:', error);
+        } finally {
+            isProcessingAvatar = false;
+        }
+        event.target.value = ''; // Reset input
+    }
+
+    async function handleBannerFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            isProcessingBanner = true;
+            const processedFile = await processImageFile(file, false);
+            if (processedFile) {
+                selectedBannerFile = processedFile;
+                previewBannerUrl = URL.createObjectURL(processedFile);
+            }
+        } catch (error) {
+            console.error('Banner processing error:', error);
+        } finally {
+            isProcessingBanner = false;
+        }
+        event.target.value = ''; // Reset input
     }
 
     function handleAvatarClick() {
@@ -66,41 +191,30 @@
         bannerFileInput.click();
     }
 
-    function handleAvatarFileSelect(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const validation = validateImageFile(file);
-        if (!validation.valid) {
-            toast.error(validation.error);
-            event.target.value = ''; // Reset the input
-            return;
-        }
-
-        selectedAvatarFile = file;
-        previewAvatarUrl = URL.createObjectURL(file);
-    }
-
-    function handleBannerFileSelect(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const validation = validateImageFile(file);
-        if (!validation.valid) {
-            toast.error(validation.error);
-            event.target.value = ''; // Reset the input
-            return;
-        }
-
-        selectedBannerFile = file;
-        previewBannerUrl = URL.createObjectURL(file);
-    }
-
     async function uploadImage(file, type) {
         if (!file) return null;
 
         const formData = new FormData();
-        formData.append('image', file);
+        
+        // Ensure we're creating a proper File object with the compressed data
+        const timestamp = new Date().getTime();
+        const fileExtension = file.name.split('.').pop().toLowerCase() || 'jpg';
+        const newFileName = `${timestamp}.${fileExtension}`;
+        
+        // Create a new File object from the compressed file
+        const fileToUpload = new File([file], newFileName, {
+            type: file.type,
+            lastModified: Date.now()
+        });
+        
+        console.log('Uploading file:', {
+            fileName: newFileName,
+            fileSize: fileToUpload.size,
+            fileType: fileToUpload.type,
+            type
+        });
+
+        formData.append('image', fileToUpload);
 
         try {
             const response = await fetch(`/api/image?${type}=true`, {
@@ -111,6 +225,11 @@
             const data = await response.json();
 
             if (!response.ok) {
+                console.error('Upload failed:', {
+                    status: response.status,
+                    error: data.error,
+                    details: data
+                });
                 throw new Error(data.error || 'Failed to upload image');
             }
 
@@ -220,6 +339,7 @@
     <button
         class="w-full h-32 lg:h-48 lg:rounded-xl overflow-hidden hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary relative"
         on:click={handleBannerClick}
+        disabled={isProcessingBanner}
     >
         {#if previewBannerUrl}
             <img src={previewBannerUrl} alt="Banner" class="w-full h-full object-cover">
@@ -227,7 +347,11 @@
             <div class="w-full h-full bg-gradient-to-br from-purple-500 to-blue-400"></div>
         {/if}
         <div class="absolute inset-0 bg-black/40 flex items-center justify-center -mt-14">
-            <Pencil class="w-6 h-6 text-white" />
+            {#if isProcessingBanner}
+                <Loader2 class="w-6 h-6 text-white animate-spin" />
+            {:else}
+                <Pencil class="w-6 h-6 text-white" />
+            {/if}
         </div>
     </button>
 
@@ -235,6 +359,7 @@
     <button
         class="left-1/2 transform -translate-x-1/2 -translate-y-3/4 top-full w-24 h-24 rounded-full border-4 border-background overflow-hidden hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary relative"
         on:click={handleAvatarClick}
+        disabled={isProcessingAvatar}
     >
         <img 
             src={previewAvatarUrl ?? PUBLIC_DEFAULT_AVATAR_URL} 
@@ -242,7 +367,11 @@
             class="w-full h-full object-cover"
         />
         <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <Pencil class="w-6 h-6 text-white" />
+            {#if isProcessingAvatar}
+                <Loader2 class="w-6 h-6 text-white animate-spin" />
+            {:else}
+                <Pencil class="w-6 h-6 text-white" />
+            {/if}
         </div>
     </button>
 </div>
