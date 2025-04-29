@@ -60,7 +60,7 @@
     </div>
 
     <div class="mt-2">
-        <p class="text-sm">{user.bio ?? "No bio yet."}</p>
+        <p class="text-sm whitespace-pre-wrap">{user.bio ?? "No bio yet."}</p>
     </div>
 
     <div class="mt-4">
