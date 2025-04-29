@@ -1,13 +1,15 @@
 import { json } from '@sveltejs/kit';
-import { CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_IMAGE_API_KEY } from '$env/static/private';
 import { error } from '@sveltejs/kit';
 import { user as User } from '$lib/data/model/user.js';
+import { uploadToR2, deleteFromR2 } from '$lib/data/r2.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function POST({ request, url, locals }) {
     try {
         // Get query parameters
         const isAvatar = url.searchParams.get('avatar') === 'true';
         const isBanner = url.searchParams.get('banner') === 'true';
+        const isPost = url.searchParams.get('post') === 'true';
 
         // Ensure user is authenticated
         if (!locals.user) {
@@ -56,135 +58,54 @@ export async function POST({ request, url, locals }) {
             }, { status: 400 });
         }
 
-        // Validate environment variables
-        if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_IMAGE_API_KEY) {
-            console.error('Missing Cloudflare credentials');
-            return json({ error: 'Server configuration error' }, { status: 500 });
-        }
-
         // Get current user data to check for existing images
         const currentUser = await User.findById(locals.user.id).lean();
         if (!currentUser) {
             throw error(404, "User not found");
         }
 
-        // Function to extract image ID from Cloudflare URL
-        const extractImageId = (url) => {
-            if (!url) return null;
-            // Match UUID format from Cloudflare URL (between last two forward slashes)
-            const matches = url.match(/\/([a-f0-9-]{36})\/[^\/]+$/i);
-            return matches ? matches[1] : null;
-        };
-
         // Delete old image if it exists
-        const oldImageId = isAvatar ? extractImageId(currentUser.image) : 
-                          isBanner ? extractImageId(currentUser.banner) : null;
-        
-        console.log('Checking for existing image:', {
-            type: isAvatar ? 'avatar' : isBanner ? 'banner' : 'unknown',
-            currentImageUrl: isAvatar ? currentUser.image : currentUser.banner,
-            extractedImageId: oldImageId,
-            urlPattern: '/[UUID]/public'
-        });
-        
-        if (oldImageId) {
+        const oldImageUrl = isAvatar ? currentUser.image : isBanner ? currentUser.banner : null;
+        if (oldImageUrl) {
             try {
-                console.log('Attempting to delete old image:', {
-                    imageId: oldImageId,
-                    accountId: CLOUDFLARE_ACCOUNT_ID
-                });
-
-                const deleteResponse = await fetch(
-                    `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/images/v1/${oldImageId}`,
-                    {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${CLOUDFLARE_IMAGE_API_KEY}`,
-                        }
-                    }
-                );
-
-                const deleteResult = await deleteResponse.json();
-                console.log('Delete response:', {
-                    status: deleteResponse.status,
-                    ok: deleteResponse.ok,
-                    success: deleteResult.success,
-                    errors: deleteResult.errors
-                });
-
+                await deleteFromR2(oldImageUrl);
             } catch (deleteError) {
                 console.error('Error deleting old image:', {
-                    imageId: oldImageId,
+                    url: oldImageUrl,
                     error: deleteError.message || deleteError
                 });
                 // Continue with upload even if delete fails
             }
         }
 
-        // Create form data for Cloudflare
-        const cloudflareFormData = new FormData();
-        
-        // Create custom filename with user ID and timestamp
-        const timestamp = new Date().getTime();
+        let folder = "other";
+
+        if (isAvatar) {
+            folder = "avatar";
+        } else if (isBanner) {
+            folder = "banner";
+        } else if (isPost) {
+            folder = "post";
+        }
+
+        // Create custom filename with user ID and UUID
         const fileExtension = imageFile.name.split('.').pop().toLowerCase();
-        const customFilename = `${locals.user.id}_${timestamp}.${fileExtension}`;
-        
-        // Create new file with custom filename
-        const newFile = new File([imageFile], customFilename, {
-            type: imageFile.type,
-            lastModified: imageFile.lastModified
-        });
-        
-        cloudflareFormData.append('file', newFile);
+        const key = `${locals.user.id}/${folder}/${uuidv4()}.${fileExtension}`;
 
         // Log request details (excluding sensitive data)
-        console.log('Uploading to Cloudflare:', {
-            accountId: CLOUDFLARE_ACCOUNT_ID,
+        console.log('Uploading to R2:', {
             fileType: imageFile.type,
             fileSize: imageFile.size,
-            customFilename,
+            key,
             isAvatar,
             isBanner
         });
 
-        // Upload to Cloudflare Images
-        const response = await fetch(
-            `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/images/v1`,
-            {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${CLOUDFLARE_IMAGE_API_KEY}`,
-                },
-                body: cloudflareFormData
-            }
-        );
+        // Upload to R2
+        const imageUrl = await uploadToR2(imageFile, key);
 
-        const result = await response.json();
-
-        // Log response for debugging (excluding sensitive data)
-        console.log('Cloudflare response:', {
-            status: response.status,
-            ok: response.ok,
-            resultSuccess: result.success,
-            errors: result.errors
-        });
-
-        if (!response.ok) {
-            return json({ 
-                error: result.errors?.[0]?.message || 'Failed to upload image to Cloudflare',
-                details: result.errors || result 
-            }, { status: response.status });
-        }
-
-        if (!result.result?.variants?.[0]) {
-            console.error('Unexpected Cloudflare response format:', result);
-            return json({ error: 'Invalid response from Cloudflare' }, { status: 500 });
-        }
-
-        // Return the image URL from the successful response
-        return json({ 
-            url: result.result.variants[0]
-        });
+        // Return the image URL
+        return json({ url: imageUrl });
     } catch (error) {
         console.error('Error uploading image:', error);
         return json({ error: error.message || 'Internal server error' }, { status: 500 });
