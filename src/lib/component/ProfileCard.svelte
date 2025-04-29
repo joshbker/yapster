@@ -5,6 +5,7 @@
     import FollowActions from "$lib/component/FollowActions.svelte"
     import MessageActions from "$lib/component/MessageActions.svelte"
     import ProfileStats from "$lib/component/ProfileStats.svelte"
+    import { Circle } from "lucide-svelte"
 
     export let user;
     export let viewer;
@@ -33,9 +34,15 @@
                         <BadgeVerified />
                     {/if}
                 </div>
-                {#if user.name}
-                    <p class="text-sm font-medium text-muted-foreground">{user.username}</p>
-                {/if}
+                <div class="flex items-center gap-1.5">
+                    {#if user.name}
+                        <p class="text-sm font-medium text-muted-foreground">{user.username}</p>
+                    {/if}
+                    {#if user.pronouns}
+                        <Circle class="h-1.5 w-1.5 fill-muted-foreground text-muted-foreground -mb-0.5" />
+                        <p class="text-sm font-medium text-muted-foreground">{user.pronouns}</p>
+                    {/if}
+                </div>
             </div>
             <ProfileActions {user} {viewer} />
         </div>

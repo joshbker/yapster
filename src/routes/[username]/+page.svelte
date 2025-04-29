@@ -1,7 +1,7 @@
 <script>
     import { page } from "$app/stores"
     import { Button } from '$lib/component/ui/button';
-    import { Settings, Pencil } from "lucide-svelte"
+    import { Settings, Pencil, Circle } from "lucide-svelte"
     import BadgeVerified from "$lib/component/BadgeVerified.svelte"
     import { PUBLIC_DEFAULT_AVATAR_URL } from "$env/static/public"
     import ProfileActions from "$lib/component/ProfileActions.svelte"
@@ -30,9 +30,15 @@
                     <BadgeVerified />
                 {/if}
             </div>
-            {#if user.name}
-                <p class="text-sm font-medium text-muted-foreground">{user.username}</p>
-            {/if}
+            <div class="flex items-center gap-1.5">
+                {#if user.name}
+                    <p class="text-sm font-medium text-muted-foreground">{user.username}</p>
+                {/if}
+                {#if user.pronouns}
+                    <Circle class="h-1.5 w-1.5 fill-muted-foreground text-muted-foreground -mb-0.5" />
+                    <p class="text-sm font-medium text-muted-foreground">{user.pronouns}</p>
+                {/if}
+            </div>
         </div>
 
         <div class="flex gap-2">
