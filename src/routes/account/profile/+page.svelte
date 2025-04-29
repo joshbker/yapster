@@ -314,7 +314,7 @@
     buttonText={isSaving ? "Saving..." : "Save"}
 />
 
-<div class="relative lg:container lg:max-w-5xl lg:px-6">
+<div class="relative lg:container lg:max-w-5xl lg:px-6 -z-10">
     <!-- Hidden file inputs -->
     <input
         type="file"
