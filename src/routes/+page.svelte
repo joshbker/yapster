@@ -5,6 +5,7 @@
         Bell, 
         Send, 
     } from "lucide-svelte"
+	import FeedPostList from '$lib/component/FeedPostList.svelte';
 
 	export let data;
 </script>
@@ -31,7 +32,7 @@
 		</div>
 	</div>
 	<div class="container p-0">
-		<h1>feed goes here</h1>
+		<FeedPostList postIds={data.posts} viewer={data.user} />
 	</div>
 {:else}
 	<AccountLogIn />

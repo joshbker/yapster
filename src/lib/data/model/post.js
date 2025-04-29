@@ -26,10 +26,6 @@ const postSchema = new Schema({
         default: []
     },
     content: {
-        thumbnail: {
-            type: String,
-            default: ""
-        },
         items: {
             type: [String],
             default: []

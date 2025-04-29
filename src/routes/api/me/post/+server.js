@@ -21,7 +21,6 @@ export const POST = async ({ request, locals }) => {
             author: locals.user.id,
             timestamp: new Date(),
             content: {
-                thumbnail: data.content.thumbnail || "",
                 items: data.content.items || [],
                 text: data.content.text || "",
                 location: data.content.location || "",
@@ -29,11 +28,15 @@ export const POST = async ({ request, locals }) => {
             }
         })
 
+        console.log("NEW POST", newPost)
+
         // Add post to user's posts array
-        await User.findByIdAndUpdate(
+        const user = await User.findByIdAndUpdate(
             locals.user.id,
             { $push: { posts: newPost._id.toString() } }
-        )
+        ).lean()
+
+        console.log("USER UPDATED", user)
 
         // Return the created post
         return json({

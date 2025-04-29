@@ -8,6 +8,7 @@
     import FollowActions from "$lib/component/FollowActions.svelte"
     import MessageActions from "$lib/component/MessageActions.svelte"
     import ProfileStats from "$lib/component/ProfileStats.svelte"
+    import PostList from "$lib/component/PostList.svelte"
 
     $: user = $page.data.displayedUser
     $: viewer = $page.data.user
@@ -82,5 +83,9 @@
 
     <div class="mt-4">
         <ProfileStats {user} {viewer} />
+    </div>
+
+    <div class="mt-6">
+        <PostList postIds={user.posts} {user} {viewer} />
     </div>
 </div>

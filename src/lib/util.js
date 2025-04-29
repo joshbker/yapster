@@ -131,3 +131,9 @@ export async function getUserByUsername(username) {
     const data = await response.json()
     return data
 }
+
+export async function getPostById(id) {
+    const response = await fetch(`${PUBLIC_BASE_URL}/api/post/${id}`)
+    const data = await response.json()
+    return data
+}

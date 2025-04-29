@@ -19,7 +19,23 @@ const userSchema = new Schema({
     following: {
         type: [String],
         default: []
-    }
+    },
+    posts: {
+        type: [String],
+        default: []
+    },
+    likes: {
+        type: [String],
+        default: []
+    },
+    saves: {
+        type: [String],
+        default: []
+    },
+    comments: {
+        type: [String],
+        default: []
+    },
 }, {
     versionKey: false
 })

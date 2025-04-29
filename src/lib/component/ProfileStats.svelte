@@ -110,7 +110,7 @@
             }
         }}
     >
-        <span class="font-semibold">{$followingCount ?? 0}</span> following
+        <span class="font-semibold">{$followingCount ?? 0}</span> {$followingCount === 1 ? 'following' : 'following'}
     </button>
     <button 
         class="text-sm text-muted-foreground hover:underline"
@@ -125,10 +125,10 @@
             }
         }}
     >
-        <span class="font-semibold">{$followersCount ?? 0}</span> followers
+        <span class="font-semibold">{$followersCount ?? 0}</span> {$followersCount === 1 ? 'follower' : 'followers'}
     </button>
     <p class="text-sm text-muted-foreground">
-        <span class="font-semibold">{user.posts?.length ?? 0}</span> posts
+        <span class="font-semibold">{user.posts?.length ?? 0}</span> {(user.posts?.length ?? 0) === 1 ? 'post' : 'posts'}
     </p>
 </div>
 
