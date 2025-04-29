@@ -6,7 +6,7 @@
     import { writable } from 'svelte/store';
 
     export let user;
-
+    export let viewer;
     let showDialog = false;
     let initialTab = "following";
     
@@ -81,7 +81,14 @@
 
     // Subscribe to updates for this specific user
     $: if ($updatedUsers.has(user.id)) {
-        resetData();
+        // Fetch fresh user data to get updated counts
+        getUserById(user.id).then(updatedUser => {
+            if (updatedUser) {
+                user.followers = updatedUser.followers;
+                user.following = updatedUser.following;
+                resetData();
+            }
+        });
     }
 
     onMount(() => {
@@ -135,7 +142,8 @@
     followersCount={$followersCount}
     isLoadingMore={$isLoadingMore}
     initialTab={initialTab}
-    on:close={() => {
+    onClose={() => {
         showDialog = false;
     }}
+    {viewer}
 />

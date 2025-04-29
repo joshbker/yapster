@@ -58,6 +58,6 @@
     </div>
 
     <div class="mt-4">
-        <ProfileStats {user} />
+        <ProfileStats {user} {viewer} />
     </div>
 </div>

@@ -43,7 +43,7 @@
         <p class="text-sm">{user.bio ?? "No bio yet."}</p>
 
         <div class="mt-3">
-            <ProfileStats {user} />
+            <ProfileStats {user} {viewer} />
         </div>
 
         <div class="flex gap-2 mt-3">

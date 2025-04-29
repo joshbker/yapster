@@ -1,11 +1,9 @@
 <script>
     import { Dialog, DialogContent } from "$lib/component/ui/dialog"
     import { Tabs, TabsContent, TabsList, TabsTrigger } from "$lib/component/ui/tabs"
-    import { Button } from "$lib/component/ui/button"
-    import BadgeVerified from "$lib/component/BadgeVerified.svelte"
     import { Loader2 } from "lucide-svelte"
-    import { PUBLIC_DEFAULT_AVATAR_URL } from "$env/static/public"
-
+    import ProfileCardSlim from "$lib/component/ProfileCardSlim.svelte"
+    import HeaderNavigation from "$lib/component/HeaderNavigation.svelte"
     export let open = false;
     export let followingUsers = [];
     export let followerUsers = [];
@@ -16,7 +14,7 @@
     export let isLoadingMore = false;
     export let onClose = () => {};
     export let initialTab = "following";
-
+    export let viewer;
     let followersContainer;
     let followingContainer;
 
@@ -58,8 +56,14 @@
 </script>
 
 <Dialog bind:open on:close={onClose}>
-    <DialogContent class="w-[calc(100%-2rem)] sm:w-[28rem] h-[calc(100vh-8rem)] max-h-[46rem] my-4 rounded-xl flex flex-col p-2 [&>button]:hidden">
-        <Tabs value={initialTab} onValueChange={handleTabChange} class="flex-1 flex flex-col">
+    <DialogContent class="h-screen lg:max-h-[46rem] min-w-[calc(100%-2rem)] lg:min-w-[50rem] lg:rounded-xl flex flex-col p-0 gap-0 [&>button]:hidden">
+        <div class="m-0 p-0">
+            <HeaderNavigation back={() => {
+                onClose();
+                open = false;
+            }} />
+        </div>
+        <Tabs value={initialTab} onValueChange={handleTabChange} class="flex-1 flex flex-col px-2">
             <TabsList class="grid w-full grid-cols-2">
                 <TabsTrigger value="following" class="flex items-center gap-2">
                     <p>Following</p>
@@ -82,26 +86,8 @@
                     </div>
                 {:else}
                     <div class="space-y-2 p-1">
-                        {#each followingUsers as followingUser}
-                            <a 
-                                href="/{followingUser.username}" 
-                                class="flex items-center gap-3 p-2 hover:bg-muted rounded-lg"
-                                on:click={() => open = false}
-                                data-sveltekit-preload-data="off"
-                            >
-                                <img src={followingUser.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="w-10 h-10 rounded-full">
-                                <div>
-                                    <div class="flex items-center gap-1">
-                                        <p class="font-medium">{followingUser.name ?? followingUser.username}</p>
-                                        {#if followingUser.verified}
-                                            <BadgeVerified size={16} />
-                                        {/if}
-                                    </div>
-                                    {#if followingUser.name}
-                                        <p class="text-sm text-muted-foreground">{followingUser.username}</p>
-                                    {/if}
-                                </div>
-                            </a>
+                        {#each followingUsers as user}
+                            <ProfileCardSlim {user} {viewer} />
                         {/each}
                         
                         {#if isLoadingMore}
@@ -124,25 +110,8 @@
                     </div>
                 {:else}
                     <div class="space-y-2 p-1">
-                        {#each followerUsers as followerUser}
-                            <a 
-                                href="/{followerUser.username}" 
-                                class="flex items-center gap-3 p-2 hover:bg-muted rounded-lg"
-                                on:click={() => open = false}
-                            >
-                                <img src={followerUser.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="w-10 h-10 rounded-full">
-                                <div>
-                                    <div class="flex items-center gap-1">
-                                        <p class="font-medium">{followerUser.name ?? followerUser.username}</p>
-                                        {#if followerUser.verified}
-                                            <BadgeVerified class="h-4 w-4" />
-                                        {/if}
-                                    </div>
-                                    {#if followerUser.name}
-                                        <p class="text-sm text-muted-foreground">{followerUser.username}</p>
-                                    {/if}
-                                </div>
-                            </a>
+                        {#each followerUsers as user}
+                            <ProfileCardSlim {user} {viewer} />
                         {/each}
                         
                         {#if isLoadingMore}
