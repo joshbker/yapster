@@ -66,6 +66,10 @@
     $: currentPath = $page.url.pathname
 </script>
 
+<svelte:head>
+    <title>Yapster</title>
+</svelte:head>
+
 <ModeWatcher/>
 
 <Toaster/>

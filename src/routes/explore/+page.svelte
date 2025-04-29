@@ -27,6 +27,10 @@
     })
 </script>
 
+<svelte:head>
+    <title>Explore | Yapster</title>
+</svelte:head>
+
 <div class="container max-w-7xl px-4 py-4">
     <h1 class="text-xl font-bold mb-4">Explore</h1>
 
