@@ -6,6 +6,7 @@
     export let back = () => window.history.back();
     export let submit = undefined;
     export let disabled = false;
+    export let buttonText = "Save";
 </script>
 
 <div class="relative flex items-center justify-center h-10">
@@ -20,7 +21,7 @@
             on:click={submit}
             {disabled}
         >
-            Save
+            {buttonText}
         </Button>
     {/if}
 </div>

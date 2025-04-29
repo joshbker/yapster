@@ -60,11 +60,7 @@ export const auth = betterAuth({
 		window: 30,
 		max: 100,
 		customRules: {
-			"/api/me/avatar": {
-				window: 60,
-				max: 3,
-			},
-			"/api/me/banner": {
+			"/api/image": {
 				window: 60,
 				max: 3,
 			},

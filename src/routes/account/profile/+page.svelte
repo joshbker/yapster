@@ -8,6 +8,7 @@
     import { Textarea } from "$lib/component/ui/textarea";
     import { client } from '$lib/auth/auth-client';
     import { toast } from 'svelte-sonner';
+    import { Pencil } from 'lucide-svelte';
 
     // Store original values
     const originalData = {
@@ -26,9 +27,105 @@
     let name = originalData.name;
     let pronouns = originalData.pronouns;
     let bio = originalData.bio;
+    let isSaving = false;
+
+    // File upload handling
+    let avatarFileInput;
+    let bannerFileInput;
+    let selectedAvatarFile = null;
+    let selectedBannerFile = null;
+    let previewAvatarUrl = avatar;
+    let previewBannerUrl = banner;
+
+    const acceptedTypes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'image/webp'
+    ];
+
+    function validateImageFile(file) {
+        if (!file) return { valid: false, error: 'No file selected' };
+        
+        if (!acceptedTypes.includes(file.type)) {
+            return {
+                valid: false,
+                error: `Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image. Provided type: ${file.type}`
+            };
+        }
+
+        return { valid: true };
+    }
+
+    function handleAvatarClick() {
+        avatarFileInput.click();
+    }
+
+    function handleBannerClick() {
+        bannerFileInput.click();
+    }
+
+    function handleAvatarFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const validation = validateImageFile(file);
+        if (!validation.valid) {
+            toast.error(validation.error);
+            event.target.value = ''; // Reset the input
+            return;
+        }
+
+        selectedAvatarFile = file;
+        previewAvatarUrl = URL.createObjectURL(file);
+    }
+
+    function handleBannerFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const validation = validateImageFile(file);
+        if (!validation.valid) {
+            toast.error(validation.error);
+            event.target.value = ''; // Reset the input
+            return;
+        }
+
+        selectedBannerFile = file;
+        previewBannerUrl = URL.createObjectURL(file);
+    }
+
+    async function uploadImage(file, type) {
+        if (!file) return null;
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const response = await fetch(`/api/image?${type}=true`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to upload image');
+            }
+
+            return data.url;
+        } catch (error) {
+            console.error('Image upload error:', error);
+            toast.error(error.message || 'Failed to upload image');
+            return null;
+        }
+    }
 
     // Reactive statement to check for changes
     $: hasChanges = 
+        selectedAvatarFile !== null ||
+        selectedBannerFile !== null ||
         avatar !== originalData.avatar ||
         banner !== originalData.banner ||
         username !== originalData.username ||
@@ -37,51 +134,120 @@
         bio !== originalData.bio;
 
     async function updateProfile() {
-        // Create update object only with changed fields
-        const updates = {};
-        if (avatar !== originalData.avatar) updates.image = avatar;
-        if (banner !== originalData.banner) updates.banner = banner;
-        if (username !== originalData.username) updates.username = username;
-        if (name !== originalData.name) updates.name = name;
-        if (pronouns !== originalData.pronouns) updates.pronouns = pronouns;
-        if (bio !== originalData.bio) updates.bio = bio;
-
-        // Only proceed if there are actual changes
-        if (Object.keys(updates).length === 0) {
-            toast.info('No changes to update');
-            return;
-        }
-
-        await client.updateUser(updates, {
-            onRequest: (ctx) => {
-                console.log("REQUEST", ctx)
-            },
-            onSuccess: async (ctx) => {
-                console.log("SUCCESS", ctx)
-                toast.success('Profile updated successfully');
-                // Navigate directly to profile page instead of reloading
-                await goto(`/${username}`, { invalidateAll: true });
-            },
-            onError: (ctx) => {
-                console.log("ERROR", ctx)
-                toast.error(ctx.error.message || 'Failed to update profile');
+        if (isSaving) return;
+        try {
+            isSaving = true;
+            // Upload images first if there are new files
+            let newAvatarUrl = null;
+            let newBannerUrl = null;
+            
+            if (selectedAvatarFile) {
+                newAvatarUrl = await uploadImage(selectedAvatarFile, 'avatar');
+                if (!newAvatarUrl) return; // Stop if avatar upload failed
             }
-        })
+
+            if (selectedBannerFile) {
+                newBannerUrl = await uploadImage(selectedBannerFile, 'banner');
+                if (!newBannerUrl) return; // Stop if banner upload failed
+            }
+
+            // Create update object only with changed fields
+            const updates = {};
+            if (newAvatarUrl || avatar !== originalData.avatar) updates.image = newAvatarUrl || avatar;
+            if (newBannerUrl || banner !== originalData.banner) updates.banner = newBannerUrl || banner;
+            if (username !== originalData.username) updates.username = username;
+            if (name !== originalData.name) updates.name = name;
+            if (pronouns !== originalData.pronouns) updates.pronouns = pronouns;
+            if (bio !== originalData.bio) updates.bio = bio;
+
+            // Only proceed if there are actual changes
+            if (Object.keys(updates).length === 0) {
+                toast.info('No changes to update');
+                return;
+            }
+
+            await client.updateUser(updates, {
+                onSuccess: async (ctx) => {
+                    toast.success('Profile updated successfully');
+                    // Clean up any object URLs we created
+                    if (previewAvatarUrl && previewAvatarUrl.startsWith('blob:')) {
+                        URL.revokeObjectURL(previewAvatarUrl);
+                    }
+                    if (previewBannerUrl && previewBannerUrl.startsWith('blob:')) {
+                        URL.revokeObjectURL(previewBannerUrl);
+                    }
+                    // Navigate directly to profile page instead of reloading
+                    await goto(`/${username}`, { invalidateAll: true });
+                },
+                onError: (ctx) => {
+                    toast.error(ctx.error.message || 'Failed to update profile');
+                }
+            });
+        } catch (error) {
+            console.error('Profile update error:', error);
+            toast.error('Failed to update profile');
+        } finally {
+            isSaving = false;
+        }
     }
 </script>
 
-<HeaderNavigation name="Edit Profile" submit={updateProfile} disabled={!hasChanges} />
+<HeaderNavigation 
+    name="Edit Profile" 
+    submit={updateProfile} 
+    disabled={!hasChanges || isSaving} 
+    buttonText={isSaving ? "Saving..." : "Save"}
+/>
 
 <div class="relative lg:container lg:max-w-5xl lg:px-6">
-    {#if banner}
-        <img src={banner} alt="Banner" class="w-full h-32 lg:h-48 object-cover lg:rounded-xl">
-    {:else}
-        <div class="w-full h-32 lg:h-48 lg:rounded-xl bg-gradient-to-br from-purple-500 to-blue-400"></div>
-    {/if}
-    <img src={avatar ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="absolute left-1/2 transform -translate-x-1/2 -bottom-8 w-24 h-24 rounded-full object-cover border-4 border-background">
+    <!-- Hidden file inputs -->
+    <input
+        type="file"
+        accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
+        class="hidden"
+        bind:this={avatarFileInput}
+        on:change={handleAvatarFileSelect}
+    />
+    <input
+        type="file"
+        accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
+        class="hidden"
+        bind:this={bannerFileInput}
+        on:change={handleBannerFileSelect}
+    />
+    
+    <!-- Clickable banner -->
+    <button
+        class="w-full h-32 lg:h-48 lg:rounded-xl overflow-hidden hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary relative"
+        on:click={handleBannerClick}
+    >
+        {#if previewBannerUrl}
+            <img src={previewBannerUrl} alt="Banner" class="w-full h-full object-cover">
+        {:else}
+            <div class="w-full h-full bg-gradient-to-br from-purple-500 to-blue-400"></div>
+        {/if}
+        <div class="absolute inset-0 bg-black/40 flex items-center justify-center -mt-14">
+            <Pencil class="w-6 h-6 text-white" />
+        </div>
+    </button>
+
+    <!-- Clickable avatar -->
+    <button
+        class="left-1/2 transform -translate-x-1/2 -translate-y-3/4 top-full w-24 h-24 rounded-full border-4 border-background overflow-hidden hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary relative"
+        on:click={handleAvatarClick}
+    >
+        <img 
+            src={previewAvatarUrl ?? PUBLIC_DEFAULT_AVATAR_URL} 
+            alt="Avatar" 
+            class="w-full h-full object-cover"
+        />
+        <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+            <Pencil class="w-6 h-6 text-white" />
+        </div>
+    </button>
 </div>
 
-<div class="container max-w-2xl mx-auto px-4 sm:px-6 mt-6 space-y-2">
+<div class="container max-w-2xl mx-auto px-4 sm:px-6 -mt-20 space-y-2">
     <div class="space-y-1">
         <Label for="name">Name</Label>
         <Input 
