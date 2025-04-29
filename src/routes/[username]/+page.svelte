@@ -119,7 +119,7 @@
 </div>
 
 <Dialog bind:open={showDialog}>
-    <DialogContent class="w-[calc(100%-2rem)] sm:w-[28rem] h-[calc(100vh-8rem)] max-h-[40rem] my-4 rounded-xl flex flex-col p-2 [&>button]:hidden">
+    <DialogContent class="w-[calc(100%-2rem)] sm:w-[28rem] h-[calc(100vh-8rem)] max-h-[46rem] my-4 rounded-xl flex flex-col p-2 [&>button]:hidden">
         <Tabs bind:value={activeTab} class="flex-1 flex flex-col">
             <TabsList class="grid w-full grid-cols-2">
                 <TabsTrigger value="following">Following</TabsTrigger>
