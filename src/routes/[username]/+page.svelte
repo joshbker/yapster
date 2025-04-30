@@ -2,6 +2,7 @@
     import { page } from "$app/stores"
     import { Button } from '$lib/component/ui/button';
     import { Settings, Pencil, Circle } from "lucide-svelte"
+    import { PUBLIC_BASE_URL } from "$env/static/public"
     import BadgeVerified from "$lib/component/profile/BadgeVerified.svelte"
     import { PUBLIC_DEFAULT_AVATAR_URL } from "$env/static/public"
     import ProfileActions from "$lib/component/profile/ProfileActions.svelte"
@@ -14,9 +15,7 @@
     $: viewer = $page.data.user
     $: profileTitle = `${user.name ?? user.username} • Yapster`
     $: profileDescription = user.bio ?? `Check out ${user.username}'s profile on Yapster`
-    $: profileImage = (user.banner ?? user.image ?? PUBLIC_DEFAULT_AVATAR_URL).startsWith('http') 
-        ? (user.banner ?? user.image ?? PUBLIC_DEFAULT_AVATAR_URL)
-        : $page.url.origin + (user.banner ?? user.image ?? PUBLIC_DEFAULT_AVATAR_URL)
+    $: profileImage = (user.banner ?? user.image ?? PUBLIC_DEFAULT_AVATAR_URL)
 </script>
 
 <svelte:head>
@@ -24,10 +23,10 @@
     <meta name="description" content={profileDescription} />
     
     <!-- OpenGraph Meta Tags -->
+    <meta property="og:type" content="profile" />
     <meta property="og:title" content={profileTitle} />
     <meta property="og:description" content={profileDescription} />
-    <meta property="og:url" content={$page.url.origin + $page.url.pathname} />
-    <meta property="og:type" content="profile" />
+    <meta property="og:url" content={PUBLIC_BASE_URL + "/" + user.username} />
     <meta property="og:image" content={profileImage} />
     <meta property="og:image:alt" content={`${user.username}'s profile`} />
     {#if user.banner}

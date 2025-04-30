@@ -1,7 +1,7 @@
 import { error } from "@sveltejs/kit"
 
+/** @type {import('./$types').PageServerLoad} */
 export const load = async ({ params, locals, fetch }) => {
-    console.log("PARAMS", params)
     const { username } = params
 
     const user = await fetch(`/api/user/username/${username}`)
@@ -10,8 +10,12 @@ export const load = async ({ params, locals, fetch }) => {
         throw error(404, "User not found")
     }
 
+    const userData = await user.json()
+
     return {
         user: locals.user,
-        displayedUser: await user.json()
+        displayedUser: userData
     }
 }
+
+export const csr = false; // Disable client-side rendering for this route
