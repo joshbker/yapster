@@ -1,3 +1,4 @@
+{post.content.text}
 <script>
     import { getTimeAgo } from "$lib/util";
     import { PUBLIC_DEFAULT_AVATAR_URL } from "$env/static/public";
@@ -340,4 +341,4 @@
             </Button>
         </div>
     </div>
-</div>
+</div> 

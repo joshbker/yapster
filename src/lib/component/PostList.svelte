@@ -3,7 +3,7 @@
     import { onMount } from "svelte";
     import { Loader2 } from "lucide-svelte";
     import { updatedUsers } from "$lib/data/userStore";
-    import PostCard from "$lib/component/post/PostCard.svelte";
+    import Post from "$lib/component/post/Post.svelte";
 
     export let postIds = [];
     export let user;
@@ -58,7 +58,7 @@
 {:else}
     <div class="flex flex-col gap-4 max-w-xl mx-auto">
         {#each posts as post (post.id)}
-            <PostCard {post} author={user} {viewer} />
+            <Post {post} author={user} {viewer} />
         {/each}
     </div>
 {/if} 
