@@ -25,7 +25,7 @@
         >
     </div>
     
-    <div class="p-6 pt-6 flex flex-col">
+    <div class="p-6 pt-6 flex flex-col bg-background">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-2.5">
                 <div class="flex items-center gap-1.5">
@@ -44,7 +44,9 @@
                     {/if}
                 </div>
             </div>
-            <ProfileActions {user} {viewer} />
+            {#if user.id != viewer.id}
+                <ProfileActions {user} {viewer} />
+            {/if}
         </div>
 
         <p class="text-sm whitespace-pre-wrap line-clamp-1">{user.bio ?? "No bio yet."}</p>
@@ -53,9 +55,11 @@
             <ProfileStats {user} {viewer} />
         </div>
 
-        <div class="flex gap-2 mt-3">
-            <FollowActions {user} {viewer} iconOnly={false} className="w-full" />
-            <MessageActions {user} {viewer} iconOnly={false} className="w-full" />
-        </div>
+        {#if user.id != viewer.id}
+            <div class="flex gap-2 mt-3">
+                <FollowActions {user} {viewer} iconOnly={false} className="w-full" />
+                <MessageActions {user} {viewer} iconOnly={false} className="w-full" />
+            </div>
+        {/if}
     </div>
 </a>

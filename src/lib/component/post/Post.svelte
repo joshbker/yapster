@@ -5,8 +5,12 @@
     import Carousel from 'svelte-carousel';
     import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
-    import MediaItem from './MediaItem.svelte';
-    import PostActions from './PostActions.svelte';
+    import MediaItem from '$lib/component/post/MediaItem.svelte';
+    import PostActions from '$lib/component/post/PostActions.svelte';
+    import { Circle, MapPin, Hash } from "lucide-svelte";
+    import { Button } from "$lib/component/ui/button";
+    import * as HoverCard from "$lib/component/ui/hover-card/index.js";
+    import ProfileCard from "$lib/component/profile/ProfileCard.svelte";
 
     export let post;
     export let author;
@@ -90,25 +94,54 @@
     <div class="flex items-start gap-3 flex-col">
         <div class="flex items-start justify-between w-full">
             <div class="flex items-start gap-2">
-                <img src={author.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="w-10 h-10 rounded-full object-cover" />
+                <HoverCard.Root>
+                    <HoverCard.Trigger
+                        href={`/${author.username}`}
+                        data-sveltekit-preload-data="off"
+                    >
+                        <img src={author.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="w-10 h-10 rounded-full object-cover" />
+                    </HoverCard.Trigger>
+                    <HoverCard.Content class="w-80">
+                        <ProfileCard user={author} viewer={viewer} />
+                    </HoverCard.Content>
+                </HoverCard.Root>
                 <div class="flex flex-col">
-                    <div class="flex items-center gap-2.5">
-                        <div class="flex items-center gap-1.5">
-                            <span class="font-semibold">{author.name ?? author.username}</span>
-                            {#if author.verified}
-                                <BadgeVerified size={16} />
-                            {/if}
-                        </div>
-                        {#if author.name}
-                            <p class="text-sm font-medium text-muted-foreground">{author.username}</p>
-                        {/if}
-                    </div>
+                    <HoverCard.Root>
+                        <HoverCard.Trigger
+                            href={`/${author.username}`}
+                            data-sveltekit-preload-data="off"
+                        >
+                            <div class="flex items-center gap-2.5">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="font-semibold">{author.name ?? author.username}</span>
+                                    {#if author.verified}
+                                        <BadgeVerified size={16} />
+                                    {/if}
+                                </div>
+                                {#if author.name}
+                                    <p class="text-sm font-medium text-muted-foreground">{author.username}</p>
+                                {/if}
+                            </div>
+                        </HoverCard.Trigger>
+                        <HoverCard.Content class="w-80">
+                            <ProfileCard user={author} viewer={viewer} />
+                        </HoverCard.Content>
+                    </HoverCard.Root>
                     {#if post.content.text}
                         <p class="whitespace-pre-wrap text-sm">{post.content.text}</p>
                     {/if}
                 </div>
             </div>
-            <span class="text-muted-foreground text-sm">{getTimeAgo(new Date(post.timestamp))}</span>
+            <div class="flex items-center gap-2">
+                {#if post.content.location}
+                    <div class="flex items-center gap-1">
+                        <MapPin class="h-4 w-4 text-muted-foreground -mb-0.5" />
+                        <p class="text-muted-foreground text-sm">{post.content.location}</p>
+                    </div>
+                    <Circle class="h-1.5 w-1.5 fill-muted-foreground text-muted-foreground -mb-0.5" />
+                {/if}
+                <p class="text-muted-foreground text-sm">{getTimeAgo(new Date(post.timestamp))}</p>
+            </div>
         </div>
         
         {#if post.content.items?.length}
@@ -157,5 +190,16 @@
         {/if}
 
         <PostActions {post} {viewer} />
+
+        {#if post.content.tags?.length}
+            <div class="flex items-center gap-1.5">
+                <Hash class="h-5 w-5" />
+                <div class="flex flex-wrap gap-1.5">
+                    {#each post.content.tags as tag}
+                        <Button variant="secondary" size="xs" class="text-foreground bg-foreground/10 px-2 py-1">{tag}</Button>
+                    {/each}
+                </div>
+            </div>
+        {/if}
     </div>
 </div> 
