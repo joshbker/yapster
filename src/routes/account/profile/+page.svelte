@@ -134,6 +134,11 @@
                 throw new Error(data.error || 'Failed to upload image');
             }
 
+            console.log('Uploaded file:', {
+                url: data.url,
+                data
+            });
+
             return data.url;
         } catch (error) {
             console.error('Image upload error:', error);
@@ -163,12 +168,18 @@
             
             if (selectedAvatarFile) {
                 newAvatarUrl = await uploadImage(selectedAvatarFile, 'avatar');
-                if (!newAvatarUrl) return; // Stop if avatar upload failed
+                if (!newAvatarUrl) {
+                    toast.error('Failed to upload avatar');
+                    return; // Stop if avatar upload failed
+                }
             }
 
             if (selectedBannerFile) {
                 newBannerUrl = await uploadImage(selectedBannerFile, 'banner');
-                if (!newBannerUrl) return; // Stop if banner upload failed
+                if (!newBannerUrl) {
+                    toast.error('Failed to upload banner');
+                    return; // Stop if banner upload failed
+                }
             }
 
             // Create update object only with changed fields

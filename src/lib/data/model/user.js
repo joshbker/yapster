@@ -19,6 +19,14 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
+    image: {
+        type: String,
+        required: true
+    },
+    banner: {
+        type: String,
+        required: true
+    },
     followers: {
         type: [String],
         default: []
