@@ -127,6 +127,9 @@ export async function getUserById(id) {
 }
 
 export async function getUserByUsername(username) {
+    if (username.startsWith('@')) {
+        username = username.slice(1)
+    }
     const response = await fetch(`${PUBLIC_BASE_URL}/api/user/username/${username}`)
     const data = await response.json()
     return data
