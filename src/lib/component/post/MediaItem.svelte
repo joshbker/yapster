@@ -25,7 +25,7 @@
     let isMuted = getStoredValue('videoMuted', true);
     let volume = getStoredValue('videoVolume', 1);
     let isVolumeControlVisible = false;
-    let volumeTimeout;
+    let volumeControlTimeout;
     let isFullscreen = false;
     let videoElement;
 
@@ -88,7 +88,7 @@
         document.addEventListener('msfullscreenchange', handleFullscreenChange);
 
         return () => {
-            if (volumeTimeout) clearTimeout(volumeTimeout);
+            if (volumeControlTimeout) clearTimeout(volumeControlTimeout);
             observer.disconnect();
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
             document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
@@ -98,13 +98,17 @@
 
     function showVolumeControl() {
         isVolumeControlVisible = true;
-        if (volumeTimeout) clearTimeout(volumeTimeout);
+        if (volumeControlTimeout) clearTimeout(volumeControlTimeout);
+        volumeControlTimeout = setTimeout(() => {
+            isVolumeControlVisible = false;
+        }, 3000); // Longer timeout for better mobile usability
     }
 
     function hideVolumeControl() {
-        volumeTimeout = setTimeout(() => {
+        if (volumeControlTimeout) clearTimeout(volumeControlTimeout);
+        volumeControlTimeout = setTimeout(() => {
             isVolumeControlVisible = false;
-        }, 2000);
+        }, 3000);
     }
 
     function toggleVideo() {
@@ -124,24 +128,31 @@
             const container = videoElement?.closest('.video-container');
             if (!container) return;
 
-            if (!document.fullscreenElement) {
-                if (container.requestFullscreen) {
-                    container.requestFullscreen();
-                } else if (container.webkitRequestFullscreen) {
-                    container.webkitRequestFullscreen();
-                } else if (container.msRequestFullscreen) {
-                    container.msRequestFullscreen();
+            if (!document.fullscreenElement && 
+                !document.webkitFullscreenElement && 
+                !document.msFullscreenElement) {
+                
+                // Try all possible methods for requesting fullscreen
+                const requestFullscreen = container.requestFullscreen ||
+                    container.webkitRequestFullscreen ||
+                    container.msRequestFullscreen ||
+                    container.mozRequestFullScreen;
+
+                if (requestFullscreen) {
+                    requestFullscreen.call(container);
+                    isFullscreen = true;
                 }
-                isFullscreen = true;
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
+                // Try all possible methods for exiting fullscreen
+                const exitFullscreen = document.exitFullscreen ||
+                    document.webkitExitFullscreen ||
+                    document.msExitFullscreen ||
+                    document.mozCancelFullScreen;
+
+                if (exitFullscreen) {
+                    exitFullscreen.call(document);
+                    isFullscreen = false;
                 }
-                isFullscreen = false;
             }
         } catch (error) {
             console.error('Error toggling fullscreen:', error);
@@ -192,21 +203,30 @@
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div class="w-full h-full relative pointer-events-auto">
                 <div
-                    class="absolute bottom-2 left-2 bg-black/50 flex items-center gap-2 p-1.5 rounded-xl text-white hover:opacity-100 transition-all overflow-hidden z-[10]"
-                    style="width: {isVolumeControlVisible ? '140px' : '32px'}"
-                    role="presentation"
+                    class="absolute bottom-2 left-2 bg-black/50 flex items-center gap-2 rounded-xl text-white hover:opacity-100 transition-all overflow-hidden z-[10]"
+                    style="width: {isVolumeControlVisible ? '156px' : '40px'}"
+                    role="group"
+                    aria-label="Volume controls"
                     on:mouseenter={showVolumeControl}
                     on:mouseleave={hideVolumeControl}
-                    on:touchstart|preventDefault={showVolumeControl}
-                    on:touchend={hideVolumeControl}
+                    on:touchstart|preventDefault|stopPropagation={showVolumeControl}
+                    on:touchend|preventDefault|stopPropagation={hideVolumeControl}
                 >
                     <button
-                        class="shrink-0"
-                        on:click|stopPropagation={() => {
+                        class="shrink-0 w-10 h-10 flex items-center justify-center touch-manipulation"
+                        on:click|preventDefault|stopPropagation={() => {
                             isMuted = !isMuted;
                             if (!isMuted && volume === 0) {
                                 volume = 1;
                             }
+                            showVolumeControl();
+                        }}
+                        on:touchend|preventDefault|stopPropagation={(e) => {
+                            isMuted = !isMuted;
+                            if (!isMuted && volume === 0) {
+                                volume = 1;
+                            }
+                            showVolumeControl();
                         }}
                     >
                         {#if isMuted || volume === 0}
@@ -216,27 +236,31 @@
                         {/if}
                     </button>
                     {#if isVolumeControlVisible}
-                        <input 
-                            type="range" 
-                            min="0" 
-                            max="1" 
-                            step="0.01"
-                            bind:value={volume}
-                            on:input={(e) => {
-                                if (videoElement) {
-                                    videoElement.volume = e.target.value;
-                                    isMuted = e.target.value === "0";
-                                }
-                            }}
-                            class="w-24 h-1 accent-white bg-white/20 rounded-full"
-                            on:click|stopPropagation
-                            on:mousedown|stopPropagation
-                        />
+                        <div class="flex items-center pr-2 h-10">
+                            <input 
+                                type="range" 
+                                min="0" 
+                                max="1" 
+                                step="0.01"
+                                bind:value={volume}
+                                on:input={(e) => {
+                                    if (videoElement) {
+                                        videoElement.volume = e.target.value;
+                                        isMuted = e.target.value === "0";
+                                    }
+                                    showVolumeControl();
+                                }}
+                                class="w-24 h-1 accent-white bg-white/20 rounded-full touch-manipulation"
+                                on:click|stopPropagation
+                                on:mousedown|stopPropagation
+                                on:touchstart|stopPropagation
+                            />
+                        </div>
                     {/if}
                 </div>
                 <button
-                    class="absolute bottom-2 right-2 bg-black/50 p-1.5 rounded-xl text-white hover:opacity-100 transition-opacity z-[10]"
-                    on:click|stopPropagation={toggleFullscreen}
+                    class="absolute bottom-2 right-2 bg-black/50 w-10 h-10 flex items-center justify-center rounded-xl text-white hover:opacity-100 transition-opacity z-[10] touch-manipulation"
+                    on:click|preventDefault|stopPropagation={toggleFullscreen}
                 >
                     {#if isFullscreen}
                         <Minimize2 class="w-5 h-5" />
