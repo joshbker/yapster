@@ -5,7 +5,10 @@ import { database } from "$lib/data/mongo";
 
 export const auth = betterAuth({
 	plugins: [
-		username()
+		username({
+			minUsernameLength: 3,
+			maxUsernameLength: 24
+		})
 	],
 	emailAndPassword: {
 		enabled: true,

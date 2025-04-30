@@ -1,5 +1,6 @@
 import { json, error } from "@sveltejs/kit"
 import { user as User } from "$lib/data/model/user.js"
+import { validateUsername, validateName, validateImageUrl, validatePronouns, validateBio } from "$lib/util.js"
 
 export const GET = async ({ locals }) => json(locals.user)
 
@@ -16,15 +17,32 @@ export const PATCH = async ({ locals, request }) => {
         // Only allow updating specific fields
         for (const field of allowedFields) {
             if (field in updates) {
-                sanitizedUpdates[field] = updates[field]
+                // Apply validation based on field type
+                switch (field) {
+                    case 'username':
+                        sanitizedUpdates[field] = validateUsername(updates[field].toLowerCase())
+                        break
+                    case 'name':
+                        sanitizedUpdates[field] = validateName(updates[field])
+                        break
+                    case 'image':
+                        sanitizedUpdates[field] = validateImageUrl(updates[field], 'Image')
+                        break
+                    case 'banner':
+                        sanitizedUpdates[field] = validateImageUrl(updates[field], 'Banner')
+                        break
+                    case 'pronouns':
+                        sanitizedUpdates[field] = validatePronouns(updates[field])
+                        break
+                    case 'bio':
+                        sanitizedUpdates[field] = validateBio(updates[field])
+                        break
+                }
             }
         }
 
-        // If trying to update username, ensure it's lowercase and unique
+        // Check if username is already taken
         if (sanitizedUpdates.username) {
-            sanitizedUpdates.username = sanitizedUpdates.username.toLowerCase()
-            
-            // Check if username is already taken
             const existingUser = await User.findOne({
                 username: sanitizedUpdates.username,
                 _id: { $ne: locals.user.id }

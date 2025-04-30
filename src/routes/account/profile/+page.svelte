@@ -10,6 +10,17 @@
     import { toast } from 'svelte-sonner';
     import { Pencil, Loader2 } from 'lucide-svelte';
     import { acceptedTypes, processImageFile, createFileFromCompressed } from '$lib/mediaUtil';
+    import { 
+        USERNAME_MIN_LENGTH, 
+        USERNAME_MAX_LENGTH, 
+        NAME_MAX_LENGTH, 
+        PRONOUNS_MAX_LENGTH, 
+        BIO_MAX_LENGTH,
+        validateUsername,
+        validateName,
+        validatePronouns,
+        validateBio
+    } from '$lib/util';
 
     // Store original values
     const originalData = {
@@ -161,6 +172,25 @@
     async function updateProfile() {
         if (isSaving) return;
         try {
+            // Frontend validation
+            try {
+                if (username !== originalData.username) {
+                    validateUsername(username);
+                }
+                if (name !== originalData.name && name.trim() !== '') {
+                    validateName(name);
+                }
+                if (pronouns !== originalData.pronouns && pronouns.trim() !== '') {
+                    validatePronouns(pronouns);
+                }
+                if (bio !== originalData.bio && bio.trim() !== '') {
+                    validateBio(bio);
+                }
+            } catch (validationError) {
+                toast.error(validationError.message || 'Validation failed');
+                return;
+            }
+
             isSaving = true;
             // Upload images first if there are new files
             let newAvatarUrl = null;
@@ -184,12 +214,12 @@
 
             // Create update object only with changed fields
             const updates = {};
-            if (newAvatarUrl || avatar !== originalData.avatar) updates.image = newAvatarUrl || avatar;
-            if (newBannerUrl || banner !== originalData.banner) updates.banner = newBannerUrl || banner;
+            if (newAvatarUrl || avatar !== originalData.avatar) updates.image = newAvatarUrl || (avatar || null);
+            if (newBannerUrl || banner !== originalData.banner) updates.banner = newBannerUrl || (banner || null);
             if (username !== originalData.username) updates.username = username;
-            if (name !== originalData.name) updates.name = name;
-            if (pronouns !== originalData.pronouns) updates.pronouns = pronouns;
-            if (bio !== originalData.bio) updates.bio = bio;
+            if (name !== originalData.name) updates.name = name.trim() || null;
+            if (pronouns !== originalData.pronouns) updates.pronouns = pronouns.trim() || null;
+            if (bio !== originalData.bio) updates.bio = bio.trim() || null;
 
             // Only proceed if there are actual changes
             if (Object.keys(updates).length === 0) {
@@ -305,22 +335,29 @@
             id="name" 
             bind:value={name}
             placeholder="Your name"
+            maxlength={NAME_MAX_LENGTH}
         />
+        <p class="text-xs text-muted-foreground text-right">{name.length}/{NAME_MAX_LENGTH}</p>
     </div>
 
     <div class="space-y-1">
         <Label for="username">Username</Label>
-        <div class="flex">
-            <span class="flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground">
-                @
-            </span>
-            <Input 
-                type="text" 
-                id="username" 
-                bind:value={username}
-                class="rounded-l-none"
-                placeholder="username"
-            />
+        <div class="flex flex-col gap-1">
+            <div class="flex">
+                <span class="flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground">
+                    @
+                </span>
+                <Input 
+                    type="text" 
+                    id="username" 
+                    bind:value={username}
+                    class="rounded-l-none"
+                    placeholder="username"
+                    minlength={USERNAME_MIN_LENGTH}
+                    maxlength={USERNAME_MAX_LENGTH}
+                />
+            </div>
+            <p class="text-xs text-muted-foreground text-right">{username.length}/{USERNAME_MAX_LENGTH}</p>
         </div>
     </div>
 
@@ -331,7 +368,9 @@
             id="pronouns" 
             bind:value={pronouns}
             placeholder="Your pronouns"
+            maxlength={PRONOUNS_MAX_LENGTH}
         />
+        <p class="text-xs text-muted-foreground text-right">{pronouns.length}/{PRONOUNS_MAX_LENGTH}</p>
     </div>
 
     <div class="space-y-1">
@@ -341,6 +380,8 @@
             bind:value={bio}
             rows="4" 
             placeholder="Tell us about yourself..."
+            maxlength={BIO_MAX_LENGTH}
         />
+        <p class="text-xs text-muted-foreground text-right">{bio.length}/{BIO_MAX_LENGTH}</p>
     </div>
 </div>

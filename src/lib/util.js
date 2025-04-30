@@ -4,16 +4,6 @@ import { cubicOut } from "svelte/easing"
 import { error } from "@sveltejs/kit"
 import { PUBLIC_BASE_URL } from "$env/static/public"
 
-export function handleError(err) {
-	if (err.code == 117 || err.code == 11000) error(409, "Another user already has a link with that shortcut, try another one.")
-	if (err.errorResponse?.errmsg) error(500, "Database Error: " + err.errorResponse.errmsg)
-	if (err.status) {
-		if (err.body) error(err.status, err.body)
-		error(err.status, "An unhandled error occured: " + err)
-	}
-	error(500, "An unhandled error occured: " + err)
-}
-
 // Function to calculate how long ago a date was
 export function getTimeAgo(date) {
     const now = new Date();
@@ -139,4 +129,72 @@ export async function getPostById(id) {
     const response = await fetch(`${PUBLIC_BASE_URL}/api/post/${id}`)
     const data = await response.json()
     return data
+}
+
+// Validation constants
+export const USERNAME_MIN_LENGTH = 3;
+export const USERNAME_MAX_LENGTH = 24;
+export const NAME_MAX_LENGTH = 24;
+export const PRONOUNS_MAX_LENGTH = 24;
+export const BIO_MAX_LENGTH = 200;
+export const IMAGE_URL_PREFIX = 'https://cdn.yapster.gg/';
+
+export const validateUsername = (username) => {
+    if (username.length < USERNAME_MIN_LENGTH || username.length > USERNAME_MAX_LENGTH) {
+        throw error(400, `Username must be between ${USERNAME_MIN_LENGTH} and ${USERNAME_MAX_LENGTH} characters`)
+    }
+    if (!/^[a-zA-Z0-9]+$/.test(username)) {
+        throw error(400, "Username can only contain letters and numbers")
+    }
+    return username.toLowerCase()
+}
+
+export const validateName = (name) => {
+    if (name === null) return null;
+    if (name.length > NAME_MAX_LENGTH) {
+        throw error(400, `Name must be ${NAME_MAX_LENGTH} characters or less`)
+    }
+    if (!/^[\x20-\x7E]+$/.test(name)) {
+        throw error(400, "Name can only contain standard ASCII characters and spaces")
+    }
+    if (/\s/.test(name) && !/^[ \t\n\r\f]*$/.test(name)) {
+        const invalidWhitespace = /[^\S ]/g.test(name)
+        if (invalidWhitespace) {
+            throw error(400, "Name can only contain regular spaces as whitespace")
+        }
+    }
+    return name
+}
+
+export const validateImageUrl = (url, field) => {
+    if (url === null) return null;
+    if (!url.startsWith(IMAGE_URL_PREFIX)) {
+        throw error(400, `${field} must be from ${IMAGE_URL_PREFIX}`)
+    }
+    return url
+}
+
+export const validatePronouns = (pronouns) => {
+    if (pronouns === null) return null;
+    if (pronouns.length > PRONOUNS_MAX_LENGTH) {
+        throw error(400, `Pronouns must be ${PRONOUNS_MAX_LENGTH} characters or less`)
+    }
+    if (!/^[\x20-\x7E]+$/.test(pronouns)) {
+        throw error(400, "Pronouns can only contain standard ASCII characters and spaces")
+    }
+    if (/\s/.test(pronouns) && !/^[ \t\n\r\f]*$/.test(pronouns)) {
+        const invalidWhitespace = /[^\S ]/g.test(pronouns)
+        if (invalidWhitespace) {
+            throw error(400, "Pronouns can only contain regular spaces as whitespace")
+        }
+    }
+    return pronouns
+}
+
+export const validateBio = (bio) => {
+    if (bio === null) return null;
+    if (bio.length > BIO_MAX_LENGTH) {
+        throw error(400, `Bio must be ${BIO_MAX_LENGTH} characters or less`)
+    }
+    return bio
 }
