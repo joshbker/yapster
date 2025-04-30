@@ -12,35 +12,37 @@
 
     $: user = $page.data.displayedUser
     $: viewer = $page.data.user
+    $: profileTitle = `${user.name ?? user.username} • Yapster`
+    $: profileDescription = user.bio ?? `Check out ${user.username}'s profile on Yapster`
+    $: profileImage = (user.banner ?? user.image ?? PUBLIC_DEFAULT_AVATAR_URL).startsWith('http') 
+        ? (user.banner ?? user.image ?? PUBLIC_DEFAULT_AVATAR_URL)
+        : $page.url.origin + (user.banner ?? user.image ?? PUBLIC_DEFAULT_AVATAR_URL)
 </script>
 
 <svelte:head>
-    <title>{user.name ?? user.username} • Yapster</title>
-    <meta name="description" content={user.bio ?? `Check out ${user.username}'s profile on Yapster`} />
+    <title>{profileTitle}</title>
+    <meta name="description" content={profileDescription} />
     
     <!-- OpenGraph Meta Tags -->
-    <meta property="og:title" content={`${user.name ?? user.username} • Yapster`} />
-    <meta property="og:description" content={user.bio ?? `Check out ${user.username}'s profile on Yapster`} />
-    <meta property="og:url" content={$page.url.href} />
+    <meta property="og:title" content={profileTitle} />
+    <meta property="og:description" content={profileDescription} />
+    <meta property="og:url" content={$page.url.origin + $page.url.pathname} />
+    <meta property="og:type" content="profile" />
+    <meta property="og:image" content={profileImage} />
+    <meta property="og:image:alt" content={`${user.username}'s profile`} />
     {#if user.banner}
-        <meta property="og:image" content={user.banner} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
     {:else}
-        <meta property="og:image" content={user.image ?? PUBLIC_DEFAULT_AVATAR_URL} />
         <meta property="og:image:width" content="400" />
         <meta property="og:image:height" content="400" />
     {/if}
     
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={`${user.name ?? user.username} • Yapster`} />
-    <meta name="twitter:description" content={user.bio ?? `Check out ${user.username}'s profile on Yapster`} />
-    {#if user.banner}
-        <meta name="twitter:image" content={user.banner} />
-    {:else}
-        <meta name="twitter:image" content={user.image ?? PUBLIC_DEFAULT_AVATAR_URL} />
-    {/if}
+    <meta name="twitter:title" content={profileTitle} />
+    <meta name="twitter:description" content={profileDescription} />
+    <meta name="twitter:image" content={profileImage} />
 </svelte:head>
 
 <div class="relative lg:container lg:max-w-5xl lg:px-6 lg:py-6">
