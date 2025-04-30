@@ -130,13 +130,7 @@
                             </HoverCard.Content>
                         </HoverCard.Root>
                         <div class="flex items-center gap-2 flex-shrink-0">
-                            {#if post.content.location}
-                                <div class="flex items-center gap-1">
-                                    <MapPin class="h-4 w-4 text-muted-foreground -mb-0.5" />
-                                    <p class="text-muted-foreground text-sm">{post.content.location}</p>
-                                </div>
-                                <Circle class="h-1.5 w-1.5 fill-muted-foreground text-muted-foreground -mb-0.5" />
-                            {/if}
+
                             <p class="text-muted-foreground text-sm">{getTimeAgo(new Date(post.timestamp))}</p>
                         </div>
                     </div>
@@ -194,15 +188,28 @@
 
         <PostActions {post} {viewer} />
 
-        {#if post.content.tags?.length}
+        <div class="flex items-center justify-between gap-2 w-full">
             <div class="flex items-center gap-1.5">
-                <Hash class="h-5 w-5" />
-                <div class="flex flex-wrap gap-1.5">
-                    {#each post.content.tags as tag}
-                        <Button variant="secondary" size="xs" class="text-foreground bg-foreground/10 px-2 py-1">{tag}</Button>
-                    {/each}
-                </div>
+                {#if post.content.tags?.length}
+                    <Hash class="h-4 w-4" />
+                    <div class="flex flex-wrap gap-1.5">
+                        {#each post.content.tags as tag}
+                            <Button variant="secondary" size="xs" class="text-foreground bg-foreground/10 px-2 py-1">
+                                <p class="text-xs">{tag}</p>
+                            </Button>
+                        {/each}
+                    </div>
+                {/if}
             </div>
-        {/if}
+
+            <div class="flex items-center gap-1.5">
+                {#if post.content.location}
+                    <Button variant="secondary" size="xs" class="text-foreground bg-foreground/10 px-2 py-1">
+                        <p class="text-xs">{post.content.location}</p>
+                    </Button>
+                    <MapPin class="h-4 w-4" />
+                {/if}
+            </div>
+        </div>
     </div>
 </div> 

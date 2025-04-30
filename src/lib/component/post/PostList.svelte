@@ -63,8 +63,9 @@
         No posts yet.
     </div>
 {:else}
-    <div class="flex flex-col gap-4 max-w-xl mx-auto">
-        {#each posts as post (post.id)}
+    <div class="flex flex-col max-w-xl gap-2 mx-auto">
+        {#each posts as post, index (post.id)}
+            <div class={index !== 0 ? "border-b mx-2" : ""}></div>
             <Post {post} author={post.author} {viewer} />
         {/each}
     </div>

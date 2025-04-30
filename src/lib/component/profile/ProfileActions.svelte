@@ -1,7 +1,7 @@
 <script>
     import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "$lib/component/ui/dropdown-menu"
     import { Button } from "$lib/component/ui/button"
-    import { Ellipsis, Flag, Ban, BellOff } from "lucide-svelte"
+    import { MoreHorizontal, Flag, Ban, BellOff } from "lucide-svelte"
 
     export let user;
     export let viewer;
@@ -10,7 +10,7 @@
 <DropdownMenu>
     <DropdownMenuTrigger as-child>
         <Button variant="outline" class="px-2 h-8">
-            <Ellipsis class="h-4 w-4" />
+            <MoreHorizontal class="h-4 w-4" />
         </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent>
