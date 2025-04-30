@@ -45,7 +45,6 @@ export const POST = async ({ request, locals }) => {
             timestamp: newPost.timestamp,
             likes: newPost.likes,
             saves: newPost.saves,
-            shares: newPost.shares,
             comments: newPost.comments,
             content: newPost.content
         })

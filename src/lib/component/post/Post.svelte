@@ -2,12 +2,11 @@
     import { getTimeAgo } from "$lib/util";
     import { PUBLIC_DEFAULT_AVATAR_URL } from "$env/static/public";
     import BadgeVerified from "$lib/component/BadgeVerified.svelte";
-    import { Heart, MessageCircle, Bookmark, Forward } from "lucide-svelte";
-    import { Button } from "$lib/component/ui/button";
     import Carousel from 'svelte-carousel';
     import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
     import MediaItem from './MediaItem.svelte';
+    import PostActions from './PostActions.svelte';
 
     export let post;
     export let author;
@@ -157,25 +156,6 @@
             </div>
         {/if}
 
-        <div class="flex w-full justify-between">
-            <div class="flex items-center gap-1 -ml-1.5">
-                <Button variant="ghost" size="sm" class="flex items-center gap-2 h-8 px-2 hover:!text-red-500">
-                    <Heart class="h-5 w-5" />
-                    <span>{post.likes?.length ?? 0}</span>
-                </Button>
-                <Button variant="ghost" size="sm" class="flex items-center gap-2 h-8 px-2 hover:!text-blue-500">
-                    <MessageCircle class="h-5 w-5" />
-                    <span>{post.comments?.length ?? 0}</span>
-                </Button>
-                <Button variant="ghost" size="sm" class="flex items-center gap-2 h-8 px-2 hover:!text-green-500">
-                    <Forward class="h-5 w-5" />
-                    <span>{post.shares ?? 0}</span>
-                </Button>
-            </div>
-            <Button variant="ghost" size="sm" class="flex items-center gap-2 h-8 px-2 hover:!text-yellow-500">
-                <Bookmark class="h-5 w-5" />
-                <span>{post.saves?.length ?? 0}</span>
-            </Button>
-        </div>
+        <PostActions {post} {viewer} />
     </div>
 </div> 

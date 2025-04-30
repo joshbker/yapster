@@ -20,7 +20,6 @@ export const GET = async ({ params }) => {
             timestamp: post.timestamp,
             likes: post.likes,
             saves: post.saves,
-            shares: post.shares,
             comments: post.comments,
             content: post.content
         })

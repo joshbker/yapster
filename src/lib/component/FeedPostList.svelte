@@ -153,7 +153,6 @@
                                 </Button>
                                 <Button variant="ghost" size="sm" class="flex items-center gap-2 h-8 px-2 hover:!text-green-500">
                                     <Forward class="h-5 w-5" />
-                                    <span>{post.shares ?? 0}</span>
                                 </Button>
                             </div>
                             <Button variant="ghost" size="sm" class="flex items-center gap-2 h-8 px-2 hover:!text-yellow-500">

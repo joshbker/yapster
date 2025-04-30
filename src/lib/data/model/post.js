@@ -17,10 +17,6 @@ const postSchema = new Schema({
         type: [String],
         default: []
     },
-    shares: {
-        type: Number,
-        default: 0
-    },
     comments: {
         type: [String],
         default: []
