@@ -93,11 +93,12 @@
     
     <div class="flex items-start gap-3 flex-col">
         <div class="flex items-start justify-between w-full">
-            <div class="flex items-start gap-2">
+            <div class="flex items-start gap-2 min-w-0 flex-1">
                 <HoverCard.Root>
                     <HoverCard.Trigger
                         href={`/@${author.username}`}
                         data-sveltekit-preload-data="off"
+                        class="flex-shrink-0"
                     >
                         <img src={author.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="w-10 h-10 rounded-full object-cover" />
                     </HoverCard.Trigger>
@@ -105,42 +106,44 @@
                         <ProfileCard user={author} viewer={viewer} />
                     </HoverCard.Content>
                 </HoverCard.Root>
-                <div class="flex flex-col">
-                    <HoverCard.Root>
-                        <HoverCard.Trigger
-                            href={`/@${author.username}`}
-                            data-sveltekit-preload-data="off"
-                        >
-                            <div class="flex items-center gap-2.5">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="font-semibold">{author.name ?? author.username}</span>
-                                    {#if author.verified}
-                                        <BadgeVerified size={16} />
+                <div class="flex flex-col min-w-0 flex-1">
+                    <div class="flex items-start justify-between w-full gap-4">
+                        <HoverCard.Root>
+                            <HoverCard.Trigger
+                                href={`/@${author.username}`}
+                                data-sveltekit-preload-data="off"
+                            >
+                                <div class="flex items-center gap-2.5">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="font-semibold">{author.name ?? author.username}</span>
+                                        {#if author.verified}
+                                            <BadgeVerified size={16} />
+                                        {/if}
+                                    </div>
+                                    {#if author.name}
+                                        <p class="text-sm font-medium text-muted-foreground">{author.username}</p>
                                     {/if}
                                 </div>
-                                {#if author.name}
-                                    <p class="text-sm font-medium text-muted-foreground">{author.username}</p>
-                                {/if}
-                            </div>
-                        </HoverCard.Trigger>
-                        <HoverCard.Content class="w-80">
-                            <ProfileCard user={author} viewer={viewer} />
-                        </HoverCard.Content>
-                    </HoverCard.Root>
+                            </HoverCard.Trigger>
+                            <HoverCard.Content class="w-80">
+                                <ProfileCard user={author} viewer={viewer} />
+                            </HoverCard.Content>
+                        </HoverCard.Root>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            {#if post.content.location}
+                                <div class="flex items-center gap-1">
+                                    <MapPin class="h-4 w-4 text-muted-foreground -mb-0.5" />
+                                    <p class="text-muted-foreground text-sm">{post.content.location}</p>
+                                </div>
+                                <Circle class="h-1.5 w-1.5 fill-muted-foreground text-muted-foreground -mb-0.5" />
+                            {/if}
+                            <p class="text-muted-foreground text-sm">{getTimeAgo(new Date(post.timestamp))}</p>
+                        </div>
+                    </div>
                     {#if post.content.text}
-                        <p class="whitespace-pre-wrap text-sm">{post.content.text}</p>
+                        <p class="whitespace-pre-wrap text-sm break-words">{post.content.text}</p>
                     {/if}
                 </div>
-            </div>
-            <div class="flex items-center gap-2">
-                {#if post.content.location}
-                    <div class="flex items-center gap-1">
-                        <MapPin class="h-4 w-4 text-muted-foreground -mb-0.5" />
-                        <p class="text-muted-foreground text-sm">{post.content.location}</p>
-                    </div>
-                    <Circle class="h-1.5 w-1.5 fill-muted-foreground text-muted-foreground -mb-0.5" />
-                {/if}
-                <p class="text-muted-foreground text-sm">{getTimeAgo(new Date(post.timestamp))}</p>
             </div>
         </div>
         
