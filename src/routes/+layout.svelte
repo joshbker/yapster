@@ -91,7 +91,7 @@
     <!-- Sticky Navbar at bottom of page -->
     {#if showNavbar && user}
         <div class="fixed bottom-0 left-0 right-0 h-16 border-t bg-background z-[9999]">
-            <div class="container mx-auto px-4">
+            <div class="container p-0 max-w-xl px-8">
                 <div class="flex h-full items-center justify-between">
                     <Button variant="ghost" size="icon" href={homeHref}>
                         <Home class="h-5 w-5" strokeWidth={isHomePath ? 2.5 : 2} />
