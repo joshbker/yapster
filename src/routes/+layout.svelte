@@ -95,8 +95,8 @@
                         <PlusCircle class="h-5 w-5" strokeWidth={currentPath === '/create' ? 2.5 : 2} />
                         <span class="sr-only">Create Post</span>
                     </Button>
-                    <Button variant="ghost" size="icon" href={`/${user.username}`}>
-                        <UserCircle class="h-5 w-5" strokeWidth={currentPath === `/${user.username}` ? 2.5 : 2} />
+                    <Button variant="ghost" size="icon" href={`/@${user.username}`}>
+                        <UserCircle class="h-5 w-5" strokeWidth={currentPath === `/@${user.username}` ? 2.5 : 2} />
                         <span class="sr-only">Profile</span>
                     </Button>
                 </div>

@@ -11,7 +11,7 @@
     export let viewer;
 </script>
 
-<a class="border rounded-lg flex flex-col" href={`/${user.username}`} data-sveltekit-preload-data="off">
+<a class="border rounded-lg flex flex-col" href={`/@${user.username}`} data-sveltekit-preload-data="off">
     <div class="relative">
         {#if user.banner}
             <img src={user.banner} alt="Banner" class="w-full h-24 object-cover rounded-t-lg">

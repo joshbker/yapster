@@ -14,7 +14,7 @@
         if (e.currentTarget.parentElement?.tagName === 'BUTTON') {
             e.preventDefault();
             // Use goto for client-side navigation after parent button's onClick completes
-            setTimeout(() => goto(`/${user.username}`), 0);
+            setTimeout(() => goto(`/@${user.username}`), 0);
         }
     }
 </script>

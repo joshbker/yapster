@@ -292,7 +292,7 @@
                         URL.revokeObjectURL(previewBannerUrl);
                     }
                     // Navigate directly to profile page instead of reloading
-                    await goto(`/${username}`, { invalidateAll: true });
+                    await goto(`/@${username}`, { invalidateAll: true });
                 },
                 onError: (ctx) => {
                     toast.error(ctx.error.message || 'Failed to update profile');

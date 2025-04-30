@@ -14,10 +14,12 @@ export async function handle({ event, resolve }) {
 
     const isApiRoute = pathname.startsWith("/api/");
     const isAuthRoute = pathname.startsWith("/api/auth");
+    const isUserRoute = pathname.startsWith("/api/user/username");
+    const isProfileRoute = pathname.startsWith("/@");
     const isUnauthenticatedRoute = unauthenticatedRoutes.includes(pathname);
 
     // Handle API routes - require auth except for auth endpoints
-    if (isApiRoute && !isAuthRoute && !session) {
+    if (isApiRoute && !isAuthRoute && !isUserRoute && !session) {
         throw error(401, "Unauthorized");
     }
 
@@ -27,7 +29,7 @@ export async function handle({ event, resolve }) {
     }
 
     // Require authentication for all routes except auth routes and unauthenticated routes
-    if (!isUnauthenticatedRoute && !isAuthRoute && !session) {
+    if (!isUnauthenticatedRoute && !isAuthRoute && !isUserRoute && !isProfileRoute && !session) {
         throw redirect(302, "/account/login");
     }
 
