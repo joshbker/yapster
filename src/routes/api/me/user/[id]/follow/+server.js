@@ -5,10 +5,6 @@ export const PATCH = async ({ params, locals }) => {
     const { id } = params
     const currentUser = locals.user
 
-    if (!currentUser) {
-        throw error(401, "Unauthorized")
-    }
-
     try {
         // Find the user to follow
         const userToFollow = await User.findOne({
