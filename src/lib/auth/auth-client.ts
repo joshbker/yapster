@@ -13,8 +13,6 @@ export const {
 	signIn,
 	signUp,
 	deleteUser,
-	useSession,
-	updateUser,
 	changePassword,
 	changeEmail,
 } = client;

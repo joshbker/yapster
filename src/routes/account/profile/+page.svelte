@@ -186,26 +186,35 @@
                 return;
             }
 
-            await client.updateUser(updates, {
-                onSuccess: async (ctx) => {
-                    toast.success('Profile updated successfully');
-                    // Clean up any object URLs we created
-                    if (previewAvatarUrl && previewAvatarUrl.startsWith('blob:')) {
-                        URL.revokeObjectURL(previewAvatarUrl);
-                    }
-                    if (previewBannerUrl && previewBannerUrl.startsWith('blob:')) {
-                        URL.revokeObjectURL(previewBannerUrl);
-                    }
-                    // Navigate directly to profile page instead of reloading
-                    await goto(`/@${username}`, { invalidateAll: true });
+            const response = await fetch('/api/me', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
                 },
-                onError: (ctx) => {
-                    toast.error(ctx.error.message || 'Failed to update profile');
-                }
+                body: JSON.stringify(updates)
             });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to update profile');
+            }
+
+            // Clean up any object URLs we created
+            if (previewAvatarUrl && previewAvatarUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previewAvatarUrl);
+            }
+            if (previewBannerUrl && previewBannerUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previewBannerUrl);
+            }
+
+            toast.success('Profile updated successfully');
+            // Navigate directly to profile page instead of reloading
+            await goto(`/@${username}`, { invalidateAll: true });
+
         } catch (error) {
             console.error('Profile update error:', error);
-            toast.error('Failed to update profile');
+            toast.error(error.message || 'Failed to update profile');
         } finally {
             isSaving = false;
         }
