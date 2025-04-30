@@ -2,13 +2,13 @@
     import { page } from "$app/stores"
     import { Button } from '$lib/component/ui/button';
     import { Settings, Pencil, Circle } from "lucide-svelte"
-    import BadgeVerified from "$lib/component/BadgeVerified.svelte"
+    import BadgeVerified from "$lib/component/profile/BadgeVerified.svelte"
     import { PUBLIC_DEFAULT_AVATAR_URL } from "$env/static/public"
     import ProfileActions from "$lib/component/profile/ProfileActions.svelte"
-    import FollowActions from "$lib/component/FollowActions.svelte"
-    import MessageActions from "$lib/component/MessageActions.svelte"
+    import FollowActions from "$lib/component/profile/FollowActions.svelte"
+    import MessageActions from "$lib/component/profile/MessageActions.svelte"
     import ProfileStats from "$lib/component/profile/ProfileStats.svelte"
-    import PostList from "$lib/component/PostList.svelte"
+    import PostGrid from "$lib/component/post/PostGrid.svelte"
 
     $: user = $page.data.displayedUser
     $: viewer = $page.data.user
@@ -88,6 +88,6 @@
     </div>
 
     <div class="mt-6">
-        <PostList postIds={[...user.posts].reverse()} {user} {viewer} />
+        <PostGrid postIds={[...user.posts].reverse()} {viewer} />
     </div>
 </div>

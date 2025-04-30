@@ -1,7 +1,7 @@
 <script>
     import { getTimeAgo } from "$lib/util";
     import { PUBLIC_DEFAULT_AVATAR_URL } from "$env/static/public";
-    import BadgeVerified from "$lib/component/BadgeVerified.svelte";
+    import BadgeVerified from "$lib/component/profile/BadgeVerified.svelte";
     import Carousel from 'svelte-carousel';
     import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';

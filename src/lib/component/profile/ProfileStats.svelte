@@ -1,6 +1,6 @@
 <script>
     import { onMount } from 'svelte';
-    import FollowersDialog from "$lib/component/FollowersDialog.svelte"
+    import FollowersDialog from "$lib/component/profile/FollowersDialog.svelte"
     import { getUserById } from "$lib/util";
     import { updatedUsers } from "$lib/data/userStore";
     import { writable } from 'svelte/store';

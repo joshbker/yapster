@@ -1,8 +1,8 @@
 <script>
     import { PUBLIC_DEFAULT_AVATAR_URL } from "$env/static/public"
-    import BadgeVerified from "$lib/component/BadgeVerified.svelte"
-    import FollowActions from "$lib/component/FollowActions.svelte"
-    import MessageActions from "$lib/component/MessageActions.svelte"
+    import BadgeVerified from "$lib/component/profile/BadgeVerified.svelte"
+    import FollowActions from "$lib/component/profile/FollowActions.svelte"
+    import MessageActions from "$lib/component/profile/MessageActions.svelte"
     import ProfileActions from "$lib/component/profile/ProfileActions.svelte"
     import { goto } from "$app/navigation"
 

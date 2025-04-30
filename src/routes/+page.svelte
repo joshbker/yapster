@@ -5,7 +5,7 @@
         Bell, 
         Send, 
     } from "lucide-svelte"
-	import FeedPostList from '$lib/component/FeedPostList.svelte';
+	import PostList from '$lib/component/post/PostList.svelte';
 
 	export let data;
 </script>
@@ -32,7 +32,7 @@
 		</div>
 	</div>
 	<div class="container p-0">
-		<FeedPostList postIds={data.posts} viewer={data.user} />
+		<PostList postIds={data.posts} viewer={data.user} />
 	</div>
 {:else}
 	<AccountLogIn />

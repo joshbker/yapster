@@ -1,12 +1,11 @@
 <script>
-    import { getPostById } from "$lib/util";
+    import { getPostById, getUserById } from "$lib/util";
     import { onMount } from "svelte";
     import { Loader2 } from "lucide-svelte";
     import { updatedUsers } from "$lib/data/userStore";
     import Post from "$lib/component/post/Post.svelte";
 
     export let postIds = [];
-    export let user;
     export let viewer;
 
     let posts = [];
@@ -18,7 +17,11 @@
         error = null;
         try {
             const loadedPosts = await Promise.all(
-                postIds.map(id => getPostById(id))
+                postIds.map(async (id) => {
+                    const post = await getPostById(id);
+                    const author = await getUserById(post.author);
+                    return { ...post, author };
+                })
             );
             posts = loadedPosts;
         } catch (err) {
@@ -28,14 +31,18 @@
         }
     }
 
-    // Initialize data on mount and when user or postIds updates
-    $: if (user && postIds) {
+    // Initialize data on mount and when postIds updates
+    $: if (postIds) {
         loadPosts();
     }
 
-    // Subscribe to updates for this specific user
-    $: if ($updatedUsers.has(user.id)) {
-        loadPosts();
+    // Subscribe to updates for all authors in the current posts
+    $: {
+        const authorIds = posts.map(post => post.author.id);
+        const needsUpdate = authorIds.some(id => $updatedUsers.has(id));
+        if (needsUpdate) {
+            loadPosts();
+        }
     }
 
     onMount(() => {
@@ -58,7 +65,7 @@
 {:else}
     <div class="flex flex-col gap-4 max-w-xl mx-auto">
         {#each posts as post (post.id)}
-            <Post {post} author={user} {viewer} />
+            <Post {post} author={post.author} {viewer} />
         {/each}
     </div>
 {/if} 
