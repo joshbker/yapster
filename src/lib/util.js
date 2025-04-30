@@ -133,9 +133,9 @@ export async function getPostById(id) {
 
 // Validation constants
 export const USERNAME_MIN_LENGTH = 3;
-export const USERNAME_MAX_LENGTH = 24;
-export const NAME_MAX_LENGTH = 24;
-export const PRONOUNS_MAX_LENGTH = 24;
+export const USERNAME_MAX_LENGTH = 16;
+export const NAME_MAX_LENGTH = 20;
+export const PRONOUNS_MAX_LENGTH = 20;
 export const BIO_MAX_LENGTH = 200;
 export const IMAGE_URL_PREFIX = 'https://cdn.yapster.gg/';
 
