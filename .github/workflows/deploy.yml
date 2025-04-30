@@ -50,10 +50,14 @@ jobs:
             # Generate comparison URL and get commit messages
             COMPARE_URL="https://github.com/${{ github.repository }}/compare/$PREVIOUS_TAG...$NEW_TAG"
             COMMITS=$(git log --pretty=format:"- %s" $PREVIOUS_TAG..HEAD)
-            echo "RELEASE_BODY=## What's Changed
-            $COMMITS
-            
-            **Full Changelog**: $COMPARE_URL" >> $GITHUB_ENV
+            {
+              echo 'RELEASE_BODY<<EOF'
+              echo "## What's Changed"
+              echo "$COMMITS"
+              echo
+              echo "**Full Changelog**: $COMPARE_URL"
+              echo 'EOF'
+            } >> $GITHUB_ENV
           fi
 
       - name: Create Release
