@@ -2,7 +2,6 @@
     import { goto } from "$app/navigation";
 
     export let user;
-    export let viewer;
 </script>
 
 <div class="flex gap-6">

@@ -104,7 +104,7 @@
     
         <div class="mt-4">
             {#if viewer}
-                <ProfileStats {user} {viewer} />
+                <ProfileStats {user} />
             {:else}
                 <div class="flex items-center gap-4">
                     <p class="text-sm text-muted-foreground">
