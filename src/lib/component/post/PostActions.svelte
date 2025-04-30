@@ -1,5 +1,5 @@
 <script>
-    import { Heart, MessageCircle, Forward, Bookmark, MoreHorizontal, Flag, Ban, BellOff, ExternalLink } from "lucide-svelte";
+    import { Heart, MessageCircle, Forward, Bookmark, MoreHorizontal, Flag, Ban, BellOff, ExternalLink, Pencil, Trash } from "lucide-svelte";
     import { PUBLIC_BASE_URL } from "$env/static/public";
     import { toast } from "svelte-sonner";
     import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "$lib/component/ui/dropdown-menu"
@@ -113,24 +113,39 @@
                         <p>Open Full Post</p>
                     </DropdownMenuItem>
                 {/if}
-                <DropdownMenuItem class="gap-2 !text-destructive" on:click={() => {
-                    alert("Report Post");
-                }}>
+                {#if viewer.id !== post.author.id}
+                    <DropdownMenuItem class="gap-2 !text-destructive" on:click={() => {
+                        alert("Delete Post");
+                    }}>
                     <Flag class="h-4 w-4" />
-                    <p>Report Post</p>
-                </DropdownMenuItem>
-                <DropdownMenuItem class="gap-2 !text-destructive" on:click={() => {
-                    alert("Block User");
-                }}>
-                    <Ban class="h-4 w-4" />
-                    <p>Block User</p>
-                </DropdownMenuItem>
-                <DropdownMenuItem class="gap-2" on:click={() => {
-                    alert("Ignore User");
-                }}>
-                    <BellOff class="h-4 w-4" />
-                    <p>Ignore User</p>
-                </DropdownMenuItem>
+                        <p>Report Post</p>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem class="gap-2 !text-destructive" on:click={() => {
+                        alert("Block User");
+                    }}>
+                        <Ban class="h-4 w-4" />
+                        <p>Block User</p>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem class="gap-2" on:click={() => {
+                        alert("Ignore User");
+                    }}>
+                        <BellOff class="h-4 w-4" />
+                        <p>Ignore User</p>
+                    </DropdownMenuItem>
+                {:else}
+                    <DropdownMenuItem class="gap-2" on:click={() => {
+                        alert("Edit Post");
+                    }}>
+                        <Pencil class="h-4 w-4" />
+                        <p>Edit Post</p>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem class="gap-2 !text-destructive" on:click={() => {
+                        alert("Delete Post");
+                    }}>
+                        <Trash class="h-4 w-4" />
+                        <p>Delete Post</p>
+                    </DropdownMenuItem>
+                {/if}
             </DropdownMenuContent>
         </DropdownMenu>
     </div>

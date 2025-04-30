@@ -9,7 +9,7 @@
     import { client } from '$lib/auth/auth-client';
     import { toast } from 'svelte-sonner';
     import { Pencil, Loader2 } from 'lucide-svelte';
-    import imageCompression from 'browser-image-compression';
+    import { acceptedTypes, processImageFile, createFileFromCompressed } from '$lib/mediaUtil';
 
     // Store original values
     const originalData = {
@@ -40,22 +40,12 @@
     let isProcessingAvatar = false;
     let isProcessingBanner = false;
 
-    const acceptedTypes = [
-        'image/jpeg',
-        'image/jpg',
-        'image/png',
-        'image/gif',
-        'image/webp'
-    ];
-
-    const MAX_FILE_SIZE = 512 * 1024; // 512KB hard limit
-
     // Image compression options
     const compressionOptions = {
-        maxSizeMB: 0.5, // 500KB (slightly under 512KB)
+        maxSizeMB: 4.9, // Just under 5MB
         maxWidthOrHeight: 1920,
         useWebWorker: true,
-        initialQuality: 0.7
+        initialQuality: 0.8
     };
 
     // Special settings for avatars
@@ -63,83 +53,6 @@
         ...compressionOptions,
         maxWidthOrHeight: 400 // Smaller dimension for avatars
     };
-
-    function validateImageFile(file) {
-        if (!file) return { valid: false, error: 'No file selected' };
-        
-        if (!acceptedTypes.includes(file.type)) {
-            return {
-                valid: false,
-                error: `Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image. Provided type: ${file.type}`
-            };
-        }
-
-        if (file.size > MAX_FILE_SIZE) {
-            return {
-                valid: false,
-                needsCompression: true,
-                error: `File too large. Maximum size is 512KB. Current size: ${(file.size / 1024).toFixed(1)}KB`
-            };
-        }
-
-        return { valid: true };
-    }
-
-    async function compressImage(file, isAvatar = false) {
-        try {
-            const options = isAvatar ? avatarOptions : compressionOptions;
-            
-            console.log('Starting compression:', {
-                originalSize: file.size,
-                maxAllowedSize: MAX_FILE_SIZE,
-                isAvatar
-            });
-
-            // Compress with the configured options
-            const compressedFile = await imageCompression(file, options);
-            
-            console.log('Compression result:', {
-                originalSize: file.size,
-                compressedSize: compressedFile.size,
-                maxAllowedSize: MAX_FILE_SIZE,
-                compressionRatio: (compressedFile.size / file.size * 100).toFixed(1) + '%'
-            });
-            
-            // Validate the compressed file
-            const validation = validateImageFile(compressedFile);
-            if (!validation.valid) {
-                throw new Error(`Could not compress image to required size. Final size: ${(compressedFile.size / 1024).toFixed(1)}KB`);
-            }
-
-            return compressedFile;
-        } catch (error) {
-            console.error('Error compressing image:', error);
-            throw error;
-        }
-    }
-
-    async function processImageFile(file, isAvatar = false) {
-        try {
-            // First try basic validation
-            const initialValidation = validateImageFile(file);
-            
-            // If file is valid and doesn't need compression, return as is
-            if (initialValidation.valid) {
-                return file;
-            }
-            
-            // If file needs compression or is too large, try to compress it
-            if (initialValidation.needsCompression || !initialValidation.valid) {
-                const compressedFile = await compressImage(file, isAvatar);
-                return compressedFile;
-            }
-            
-            throw new Error(initialValidation.error);
-        } catch (error) {
-            toast.error(error.message || 'Failed to process image');
-            return null;
-        }
-    }
 
     async function handleAvatarFileSelect(event) {
         const file = event.target.files[0];
@@ -154,6 +67,7 @@
             }
         } catch (error) {
             console.error('Avatar processing error:', error);
+            toast.error(error.message || 'Failed to process image');
         } finally {
             isProcessingAvatar = false;
         }
@@ -173,6 +87,7 @@
             }
         } catch (error) {
             console.error('Banner processing error:', error);
+            toast.error(error.message || 'Failed to process image');
         } finally {
             isProcessingBanner = false;
         }
@@ -191,20 +106,10 @@
         if (!file) return null;
 
         const formData = new FormData();
-        
-        // Ensure we're creating a proper File object with the compressed data
-        const timestamp = new Date().getTime();
-        const fileExtension = file.name.split('.').pop().toLowerCase() || 'jpg';
-        const newFileName = `${timestamp}.${fileExtension}`;
-        
-        // Create a new File object from the compressed file
-        const fileToUpload = new File([file], newFileName, {
-            type: file.type,
-            lastModified: Date.now()
-        });
+        const fileToUpload = createFileFromCompressed(file);
         
         console.log('Uploading file:', {
-            fileName: newFileName,
+            fileName: fileToUpload.name,
             fileSize: fileToUpload.size,
             fileType: fileToUpload.type,
             type
@@ -314,7 +219,7 @@
     buttonText={isSaving ? "Saving..." : "Save"}
 />
 
-<div class="relative lg:container lg:max-w-5xl lg:px-6 -z-10">
+<div class="relative lg:container lg:max-w-5xl lg:px-6 z-10">
     <!-- Hidden file inputs -->
     <input
         type="file"
@@ -372,7 +277,7 @@
     </button>
 </div>
 
-<div class="container max-w-2xl mx-auto px-4 sm:px-6 -mt-20 space-y-2">
+<div class="container max-w-2xl mx-auto px-4 sm:px-6 -mt-20 space-y-2 z-20">
     <div class="space-y-1">
         <Label for="name">Name</Label>
         <Input 

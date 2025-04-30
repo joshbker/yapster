@@ -6,10 +6,8 @@
     import { Label } from '$lib/component/ui/label';
     import { toast } from "svelte-sonner";
     import { goto } from '$app/navigation';
-    import { page } from '$app/stores';
-    import HeaderNavigation from '$lib/component/HeaderNavigation.svelte';
     import { MapPin, Image as ImageIcon, Hash } from 'lucide-svelte';
-    import imageCompression from 'browser-image-compression';
+    import { acceptedTypes, MAX_FILE_SIZE, processImageFile } from '$lib/mediaUtil';
 
     let isLoading = false;
     let error = '';
@@ -21,26 +19,7 @@
     let mediaFiles = [];
     let previewUrls = [];
 
-    const acceptedTypes = [
-        'image/jpeg',
-        'image/jpg',
-        'image/png',
-        'image/gif',
-        'image/webp',
-        'video/mp4',
-        'video/webm'
-    ];
-
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB limit for media files
     const MAX_FILES = 9; // Maximum number of media files
-
-    // Image compression options
-    const compressionOptions = {
-        maxSizeMB: 2,
-        maxWidthOrHeight: 1920,
-        useWebWorker: true,
-        initialQuality: 0.8
-    };
 
     async function handleFileSelect(event) {
         const files = Array.from(event.target.files || []);
@@ -51,20 +30,16 @@
         }
 
         for (const file of files) {
-            if (!acceptedTypes.includes(file.type)) {
-                toast.error('Unsupported file type');
-                continue;
-            }
-
-            if (file.size > MAX_FILE_SIZE) {
-                toast.error('File too large (max 5MB)');
-                continue;
-            }
-
             try {
                 let processedFile = file;
                 if (file.type.startsWith('image/')) {
-                    processedFile = await imageCompression(file, compressionOptions);
+                    processedFile = await processImageFile(file);
+                } else if (!acceptedTypes.includes(file.type)) {
+                    toast.error('Unsupported file type');
+                    continue;
+                } else if (file.size > MAX_FILE_SIZE) {
+                    toast.error('File too large (max 5MB)');
+                    continue;
                 }
 
                 mediaFiles = [...mediaFiles, processedFile];
@@ -72,7 +47,7 @@
                 previewUrls = [...previewUrls, url];
             } catch (err) {
                 console.error('Error processing file:', err);
-                toast.error('Error processing file');
+                toast.error(err.message || 'Error processing file');
             }
         }
     }
