@@ -16,4 +16,8 @@ Social media website, a college project.
 - [ ] Support media on posts properly
 - [ ] Improve video post dynamic background so synced to current frame when fetched
 - [ ] Fix volume slider overlapping fullscreen button on video on mobile device
+- [ ] Make volume slider actually change the volume on my phone cos it does nothing rn
 - [ ] Add interacting with posts (likes, comments, sharing, saving, etc)
+- [ ] Implement blocking
+- [ ] Implement ignoring
+- [ ] Improve home page feed display (remove For You and Following for now too, just show posts by timestamp)
