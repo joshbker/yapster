@@ -64,7 +64,7 @@
 
     function handleTabChange(value) {
         if (value === "followers") {
-            goto(`/@${$page.params.username}/followers`, { replaceState: true });
+            goto(`/@${user.username}/followers`, { replaceState: true });
         }
     }
 </script>

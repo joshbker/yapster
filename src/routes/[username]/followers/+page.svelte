@@ -6,7 +6,7 @@
     import { page } from '$app/stores';
     import { goto } from '$app/navigation';
     import { writable } from 'svelte/store';
-    import { getUserById, getUserByUsername } from "$lib/util";
+    import { getUserById } from "$lib/util";
     import { onMount } from 'svelte';
 
     const PAGE_SIZE = 20;
@@ -63,7 +63,7 @@
 
     function handleTabChange(value) {
         if (value === "following") {
-            goto(`/@${$page.params.username}/following`, { replaceState: true });
+            goto(`/@${user.username}/following`, { replaceState: true });
         }
     }
 </script>
