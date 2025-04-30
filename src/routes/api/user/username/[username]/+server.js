@@ -19,7 +19,9 @@ export const GET = async ({ params, locals }) => {
                 name: user.name,
                 image: user.image,
                 banner: user.banner,
+                pronouns: user.pronouns,
                 bio: user.bio,
+                verified: user.verified,
                 followers: user.followers.length,
                 following: user.following.length,
                 posts: user.posts.length
