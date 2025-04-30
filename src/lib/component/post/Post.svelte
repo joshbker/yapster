@@ -1,4 +1,3 @@
-{post.content.text}
 <script>
     import { getTimeAgo } from "$lib/util";
     import { PUBLIC_DEFAULT_AVATAR_URL } from "$env/static/public";
@@ -7,9 +6,8 @@
     import { Button } from "$lib/component/ui/button";
     import Carousel from 'svelte-carousel';
     import { onMount } from 'svelte';
-    import { fade, crossfade, fade as fadeTransition } from 'svelte/transition';
+    import { fade } from 'svelte/transition';
     import MediaItem from './MediaItem.svelte';
-    import { tweened } from 'svelte/motion';
 
     export let post;
     export let author;
@@ -19,182 +17,8 @@
     let showCounter = false;
     let counterTimeout;
     let isSwiping = false;
-    let isFullscreen = false;
-    let videoThumbnails = new Map();
-    let currentThumbnail = '';
-    let nextThumbnail = '';
-    let showingFirst = true;
-    let backgroundInterval;
-    let tempVideo;
-    let activeVideoElement = null;
-
-    const [send, receive] = crossfade({
-        duration: 1000,
-        fallback: fadeTransition,
-        easing: (t) => t * t * (3 - 2 * t)
-    });
-
-    let fadeOpacity = tweened(0, {
-        duration: 2000,
-        easing: (t) => t * t * (3 - 2 * t)
-    });
-
-    async function getVideoThumbnail(videoUrl, time = 0) {
-        const cacheKey = `${videoUrl}-${time}`;
-        if (videoThumbnails.has(cacheKey)) {
-            return videoThumbnails.get(cacheKey);
-        }
-
-        return new Promise((resolve) => {
-            const video = document.createElement('video');
-            video.crossOrigin = 'anonymous';
-            video.src = videoUrl;
-            
-            const handleLoad = () => {
-                video.currentTime = time;
-            };
-
-            const handleSeeked = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const thumbnailUrl = canvas.toDataURL();
-                videoThumbnails.set(cacheKey, thumbnailUrl);
-                video.removeEventListener('loadeddata', handleLoad);
-                video.removeEventListener('seeked', handleSeeked);
-                resolve(thumbnailUrl);
-            };
-
-            video.addEventListener('loadeddata', handleLoad);
-            video.addEventListener('seeked', handleSeeked);
-            video.addEventListener('error', () => {
-                video.removeEventListener('loadeddata', handleLoad);
-                video.removeEventListener('seeked', handleSeeked);
-                resolve('');
-            });
-        });
-    }
-
-    async function updateBackgroundFromCurrentFrame() {
-        if (!activeVideoElement?.videoElement) return;
-        
-        const video = activeVideoElement.videoElement;
-        const videoUrl = video.src;
-        const currentTime = video.currentTime;
-        
-        try {
-            const newThumbnail = await getVideoThumbnail(videoUrl, currentTime);
-            if (newThumbnail) {
-                if (showingFirst) {
-                    nextThumbnail = newThumbnail;
-                    await fadeOpacity.set(1, { duration: 2000 });
-                } else {
-                    currentThumbnail = newThumbnail;
-                    await fadeOpacity.set(0, { duration: 2000 });
-                }
-                showingFirst = !showingFirst;
-            }
-        } catch (error) {
-            console.error('Error updating background from current frame:', error);
-        }
-    }
-
-    async function startBackgroundCycle(videoUrl) {
-        try {
-            cleanup();
-
-            // Initialize first thumbnail
-            currentThumbnail = await getVideoThumbnail(videoUrl, 0);
-            nextThumbnail = await getVideoThumbnail(videoUrl, 5);
-            fadeOpacity.set(0, { duration: 0 });
-            showingFirst = true;
-
-            // Start the cycle
-            backgroundInterval = setInterval(updateBackgroundFromCurrentFrame, 5000);
-        } catch (error) {
-            console.error('Error starting background cycle:', error);
-            if (!currentThumbnail && !nextThumbnail) {
-                currentThumbnail = '';
-                nextThumbnail = '';
-            }
-        }
-    }
-
-    function handleVideoMount(event) {
-        activeVideoElement = event.detail;
-        if (isVideo(post.content.items[currentPageIndex])) {
-            startBackgroundCycle(post.content.items[currentPageIndex]);
-        }
-    }
-
-    // Clean up function
-    function cleanup() {
-        if (backgroundInterval) {
-            clearInterval(backgroundInterval);
-            backgroundInterval = null;
-        }
-        if (tempVideo) {
-            tempVideo.pause();
-            tempVideo.removeAttribute('src');
-            tempVideo.load();
-            tempVideo = null;
-        }
-        videoThumbnails.clear();
-        currentThumbnail = '';
-        nextThumbnail = '';
-    }
-
-    // Update background cycle when page changes
-    $: {
-        if (post.content.items?.[currentPageIndex]) {
-            cleanup();
-            if (isVideo(post.content.items[currentPageIndex]) && activeVideoElement) {
-                startBackgroundCycle(post.content.items[currentPageIndex]);
-            }
-        }
-    }
-
-    // Load volume settings from localStorage
-    onMount(() => {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && post.content.items.length > 1) {
-                    showCounterTemporarily();
-                }
-            });
-        });
-
-        const carousel = document.getElementById(`carousel-${post.id}`);
-        if (carousel) {
-            observer.observe(carousel);
-        }
-
-        const handleFullscreenChange = () => {
-            isFullscreen = !!(
-                document.fullscreenElement ||
-                document.webkitFullscreenElement ||
-                document.msFullscreenElement
-            );
-        };
-        
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('msfullscreenchange', handleFullscreenChange);
-
-        return () => {
-            if (counterTimeout) clearTimeout(counterTimeout);
-            cleanup();
-            observer.disconnect();
-            document.removeEventListener('fullscreenchange', handleFullscreenChange);
-            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-            document.removeEventListener('msfullscreenchange', handleFullscreenChange);
-        };
-    });
 
     function isVideo(url) {
-        // Check common video extensions
         const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
         const urlLower = url.toLowerCase();
         return videoExtensions.some(ext => urlLower.endsWith(ext));
@@ -221,29 +45,44 @@
             e.preventDefault();
         }
     }
+
+    onMount(() => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && post.content.items.length > 1) {
+                    showCounterTemporarily();
+                }
+            });
+        });
+
+        const carousel = document.getElementById(`carousel-${post.id}`);
+        if (carousel) {
+            observer.observe(carousel);
+        }
+
+        return () => {
+            if (counterTimeout) clearTimeout(counterTimeout);
+            observer.disconnect();
+        };
+    });
 </script>
 
 <div class="rounded-lg p-4 relative overflow-hidden">
     {#if post.content.items?.length}
         {#if isVideo(post.content.items[currentPageIndex])}
-            {#if currentThumbnail}
-                <div class="absolute inset-0 -z-10">
-                    <div 
-                        class="absolute inset-0 bg-cover bg-center"
-                        style="background-image: url('{currentThumbnail}'); filter: blur(16px); transform: scale(1.1);"
-                    />
-                    <div 
-                        class="absolute inset-0 bg-cover bg-center"
-                        style="background-image: url('{nextThumbnail}'); filter: blur(16px); transform: scale(1.1); opacity: {$fadeOpacity};"
-                    />
-                </div>
-            {:else}
-                <div class="absolute inset-0 bg-black/50 -z-10" />
-            {/if}
+            <video 
+                src={post.content.items[currentPageIndex]}
+                class="absolute inset-0 -z-10 w-full h-full object-cover scale-110"
+                style="filter: blur(16px);"
+                muted
+                loop
+                playsinline
+                autoplay
+            />
         {:else}
             <div 
-                class="absolute inset-0 bg-cover bg-center -z-10"
-                style="background-image: url('{post.content.items[currentPageIndex]}'); filter: blur(16px); transform: scale(1.1);"
+                class="absolute inset-0 bg-cover bg-center -z-10 scale-110"
+                style="background-image: url('{post.content.items[currentPageIndex]}'); filter: blur(16px);"
             />
         {/if}
         <div class="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.6)_0%,transparent_50%,rgba(0,0,0,0.6)_100%)] -z-10" />
@@ -297,8 +136,7 @@
                             >
                                 <MediaItem 
                                     {item} 
-                                    isVideo={isVideo(item)} 
-                                    on:videoMount={handleVideoMount}
+                                    isVideo={isVideo(item)}
                                 />
                                 {#if showCounter}
                                     <div class="absolute top-2 right-2 bg-black/50 opacity-70 px-2 py-1 rounded-xl text-white text-xs" transition:fade>
@@ -313,7 +151,6 @@
                         <MediaItem 
                             item={post.content.items[0]} 
                             isVideo={isVideo(post.content.items[0])}
-                            on:videoMount={handleVideoMount}
                         />
                     </div>
                 {/if}

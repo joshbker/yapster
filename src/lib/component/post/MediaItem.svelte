@@ -2,7 +2,6 @@
     import { Play, Volume2, VolumeX, Maximize2, Minimize2 } from "lucide-svelte";
     import { fade } from 'svelte/transition';
     import { onMount } from 'svelte';
-    import { writable } from 'svelte/store';
     import { createEventDispatcher } from 'svelte';
 
     const dispatch = createEventDispatcher();
@@ -48,6 +47,7 @@
     $: if (videoElement) {
         videoElement.volume = volume;
         videoElement.muted = isMuted;
+        dispatch('videoMount', { videoElement });
     }
 
     onMount(() => {
@@ -147,12 +147,6 @@
             console.error('Error toggling fullscreen:', error);
         }
     }
-
-    function onVideoMount(event) {
-        if (videoElement) {
-            dispatch('videoMount', { videoElement });
-        }
-    }
 </script>
 
 <div 
@@ -170,7 +164,6 @@
         <div class="relative w-full h-full isolate">
             <video 
                 bind:this={videoElement}
-                on:loadeddata={onVideoMount}
                 src={item} 
                 alt="Post media" 
                 class="absolute inset-0 w-full h-full rounded-lg object-cover"
@@ -181,6 +174,8 @@
                 bind:paused={isPaused}
                 disablePictureInPicture
                 controlsList="nodownload"
+                crossorigin="anonymous"
+                on:loadeddata
             >
                 <track kind="captions" />
                 Your browser does not support the video tag.

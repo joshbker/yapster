@@ -7,6 +7,7 @@
     import { Loader2, Heart, MessageCircle, Bookmark, Forward } from "lucide-svelte";
     import { updatedUsers } from "$lib/data/userStore";
     import { Button } from "$lib/component/ui/button";
+    import MediaItem from "./post/MediaItem.svelte";
 
     export let postIds = [];
     export let viewer;
@@ -17,6 +18,13 @@
 
     // Store for caching author data to avoid duplicate fetches
     let authorCache = new Map();
+
+    function isVideo(url) {
+        // Check common video extensions
+        const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
+        const urlLower = url.toLowerCase();
+        return videoExtensions.some(ext => urlLower.endsWith(ext));
+    }
 
     async function loadPosts() {
         loading = true;
@@ -127,7 +135,9 @@
                         {#if post.content.items && post.content.items.length > 0}
                             <div class="mt-3 grid gap-2" class:grid-cols-2={post.content.items.length > 1}>
                                 {#each post.content.items as item}
-                                    <img src={item} alt="Post media" class="rounded-lg w-full h-full object-cover">
+                                    <div class="aspect-square">
+                                        <MediaItem {item} isVideo={isVideo(item)} />
+                                    </div>
                                 {/each}
                             </div>
                         {/if}
