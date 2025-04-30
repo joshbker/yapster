@@ -2,7 +2,7 @@
     import { Dialog, DialogContent } from "$lib/component/ui/dialog"
     import { Tabs, TabsContent, TabsList, TabsTrigger } from "$lib/component/ui/tabs"
     import { Loader2 } from "lucide-svelte"
-    import ProfileCardSlim from "$lib/component/ProfileCardSlim.svelte"
+    import ProfileCardSlim from "$lib/component/profile/ProfileCardSlim.svelte"
     import HeaderNavigation from "$lib/component/HeaderNavigation.svelte"
     export let open = false;
     export let followingUsers = [];

@@ -1,6 +1,6 @@
 <script>
     import { onMount } from 'svelte';
-    import ProfileCard from "$lib/component/ProfileCard.svelte";
+    import ProfileCard from "$lib/component/profile/ProfileCard.svelte";
     import { page } from "$app/stores";
 
     let users = [];

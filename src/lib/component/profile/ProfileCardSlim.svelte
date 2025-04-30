@@ -3,7 +3,7 @@
     import BadgeVerified from "$lib/component/BadgeVerified.svelte"
     import FollowActions from "$lib/component/FollowActions.svelte"
     import MessageActions from "$lib/component/MessageActions.svelte"
-    import ProfileActions from "$lib/component/ProfileActions.svelte"
+    import ProfileActions from "$lib/component/profile/ProfileActions.svelte"
     import { goto } from "$app/navigation"
 
     export let user;

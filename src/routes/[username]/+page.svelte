@@ -4,10 +4,10 @@
     import { Settings, Pencil, Circle } from "lucide-svelte"
     import BadgeVerified from "$lib/component/BadgeVerified.svelte"
     import { PUBLIC_DEFAULT_AVATAR_URL } from "$env/static/public"
-    import ProfileActions from "$lib/component/ProfileActions.svelte"
+    import ProfileActions from "$lib/component/profile/ProfileActions.svelte"
     import FollowActions from "$lib/component/FollowActions.svelte"
     import MessageActions from "$lib/component/MessageActions.svelte"
-    import ProfileStats from "$lib/component/ProfileStats.svelte"
+    import ProfileStats from "$lib/component/profile/ProfileStats.svelte"
     import PostList from "$lib/component/PostList.svelte"
 
     $: user = $page.data.displayedUser
