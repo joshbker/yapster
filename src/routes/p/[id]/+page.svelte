@@ -3,7 +3,7 @@
     import { onMount } from "svelte";
     import { Loader2 } from "lucide-svelte";
     import Post from "$lib/component/post/Post.svelte";
-
+    import HeaderNavigation from "$lib/component/HeaderNavigation.svelte";
     export let data;
 
     let post = null;
@@ -36,6 +36,7 @@
     });
 </script>
 
+<HeaderNavigation />
 <div class="container max-w-xl mx-auto p-4">
     {#if loading}
         <div class="flex justify-center py-8">
