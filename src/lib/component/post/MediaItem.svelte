@@ -28,30 +28,44 @@
     let volumeControlTimeout;
     let isFullscreen = false;
     let videoElement;
+    let isUpdatingVolume = false;
 
-    // Save settings whenever they change
-    $: {
+    function updateVolume(newVolume, newMuted = null) {
+        if (isUpdatingVolume) return;
+        isUpdatingVolume = true;
+        
         try {
-            if (typeof isMuted === 'boolean') {
-                localStorage.setItem('videoMuted', isMuted.toString());
+            // Update volume state
+            volume = newVolume;
+            if (newMuted !== null) {
+                isMuted = newMuted;
             }
-            if (typeof volume === 'number') {
-                localStorage.setItem('videoVolume', volume.toString());
-            }
-        } catch (error) {
-            console.error('Error saving settings:', error);
-        }
-    }
 
-    // Handle video binding to set initial volume
-    $: if (videoElement) {
-        videoElement.volume = volume;
-        videoElement.muted = isMuted;
-        dispatch('videoMount', { videoElement });
+            // Update video element if it exists
+            if (videoElement) {
+                videoElement.volume = newVolume;
+                if (newMuted !== null) {
+                    videoElement.muted = newMuted;
+                }
+            }
+
+            // Save to localStorage
+            localStorage.setItem('videoVolume', newVolume.toString());
+            if (newMuted !== null) {
+                localStorage.setItem('videoMuted', newMuted.toString());
+            }
+        } finally {
+            isUpdatingVolume = false;
+        }
     }
 
     onMount(() => {
         if (!isVideo || !videoElement) return;
+
+        // Set initial values
+        videoElement.volume = volume;
+        videoElement.muted = isMuted;
+        dispatch('videoMount', { videoElement });
 
         // Set up Intersection Observer for video autoplay
         const observer = new IntersectionObserver(
@@ -215,17 +229,15 @@
                     <button
                         class="shrink-0 w-10 h-10 flex items-center justify-center touch-manipulation"
                         on:click|preventDefault|stopPropagation={() => {
-                            isMuted = !isMuted;
-                            if (!isMuted && volume === 0) {
-                                volume = 1;
-                            }
+                            const newMuted = !isMuted;
+                            const newVolume = newMuted ? volume : (volume === 0 ? 1 : volume);
+                            updateVolume(newVolume, newMuted);
                             showVolumeControl();
                         }}
                         on:touchend|preventDefault|stopPropagation={(e) => {
-                            isMuted = !isMuted;
-                            if (!isMuted && volume === 0) {
-                                volume = 1;
-                            }
+                            const newMuted = !isMuted;
+                            const newVolume = newMuted ? volume : (volume === 0 ? 1 : volume);
+                            updateVolume(newVolume, newMuted);
                             showVolumeControl();
                         }}
                     >
@@ -244,10 +256,8 @@
                                 step="0.01"
                                 bind:value={volume}
                                 on:input={(e) => {
-                                    if (videoElement) {
-                                        videoElement.volume = e.target.value;
-                                        isMuted = e.target.value === "0";
-                                    }
+                                    const newVolume = parseFloat(e.target.value);
+                                    updateVolume(newVolume, newVolume === 0);
                                     showVolumeControl();
                                 }}
                                 class="w-24 h-1 accent-white bg-white/20 rounded-full touch-manipulation"
