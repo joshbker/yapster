@@ -59,10 +59,6 @@
         }
     }
 
-    function handleBack() {
-        history.back();
-    }
-
     function handleTabChange(value) {
         if (value === "followers") {
             goto(`/@${user.username}/followers`, { replaceState: true });
@@ -72,7 +68,7 @@
 
 <div class="h-full w-full flex flex-col">
     <div class="m-0 p-0">
-        <HeaderNavigation back={handleBack} />
+        <HeaderNavigation  name={`${user.name ?? user.username}'s Following`} />
     </div>
     <div class="flex-1 flex flex-col px-2 max-w-xl self-center w-full">
         <div class="w-full">
