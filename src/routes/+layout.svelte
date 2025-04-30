@@ -7,6 +7,7 @@
     import { Button } from '$lib/component/ui/button';
     import { client } from '$lib/auth/auth-client';
     import { page } from "$app/stores"
+    import { feedTab } from '$lib/data/feedStore'
     import { 
         Home, 
         Compass, 
@@ -64,6 +65,15 @@
     $: user = $page.data.user
     $: showNavbar = !$page.data.hideNavbar
     $: currentPath = $page.url.pathname
+    $: isHomePath = currentPath === '/' || currentPath === '/following'
+    $: homeHref = $feedTab === 'following' ? '/following' : '/'
+
+    // Update feedTab when URL changes
+    $: if (currentPath === '/following') {
+        feedTab.set('following')
+    } else if (currentPath === '/') {
+        feedTab.set('for-you')
+    }
 </script>
 
 <svelte:head>
@@ -83,8 +93,8 @@
         <div class="fixed bottom-0 left-0 right-0 h-16 border-t bg-background z-[9999]">
             <div class="container mx-auto px-4">
                 <div class="flex h-full items-center justify-between">
-                    <Button variant="ghost" size="icon" href="/">
-                        <Home class="h-5 w-5" strokeWidth={currentPath === '/' ? 2.5 : 2} />
+                    <Button variant="ghost" size="icon" href={homeHref}>
+                        <Home class="h-5 w-5" strokeWidth={isHomePath ? 2.5 : 2} />
                         <span class="sr-only">Home</span>
                     </Button>
                     <Button variant="ghost" size="icon" href="/explore">

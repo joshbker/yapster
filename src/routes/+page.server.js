@@ -10,24 +10,10 @@ export const load = async ({ locals }) => {
     }
 
     try {
-        // Get current user's data including their following list
-        const currentUser = await User.findById(locals.user.id).lean();
-        
-        if (!currentUser) {
-            throw error(404, "User not found");
-        }
-
-        // For now, return the user's posts and posts from people they follow
-        // This can be enhanced later with pagination and "For You" recommendations
-        const followingIds = currentUser.following || [];
-        const relevantUserIds = [currentUser._id, ...followingIds];
-
-        // Get posts from all relevant users
-        const posts = await Post.find({
-            author: { $in: relevantUserIds }
-        })
-        .sort({ timestamp: -1 }) // Sort by timestamp descending (newest first)
-        .lean();
+        // Get all posts sorted by timestamp
+        const posts = await Post.find({})
+            .sort({ timestamp: -1 }) // Sort by timestamp descending (newest first)
+            .lean();
 
         return {
             user: locals.user,

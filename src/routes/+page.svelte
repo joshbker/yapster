@@ -1,39 +1,11 @@
 <script>
+	import Feed from '$lib/component/page/Feed.svelte';
 	import AccountLogIn from '$lib/component/page/AccountLogIn.svelte';
-	import { Button } from '$lib/component/ui/button';
-	import { 
-        Bell, 
-        Send, 
-    } from "lucide-svelte"
-	import PostList from '$lib/component/post/PostList.svelte';
-
-	export let data;
+	import { page } from '$app/stores';
 </script>
 
-{#if data.user}
-	<div class="container px-2">
-		<div class="flex h-12 items-center justify-between">
-			<div class="flex items-center text-sm">
-				<Button variant="ghost" class="px-2">For you</Button>
-				<Button variant="ghost" class="px-2">Following</Button>
-			</div>
-
-			<!-- Navigation Items -->
-			<div class="flex items-center">
-				<Button variant="ghost" size="icon" href="/account/notifications" >
-					<Bell class="h-5 w-5" />
-					<span class="sr-only">Notifications</span>
-				</Button>
-				<Button variant="ghost" size="icon" href="/account/messages">
-					<Send class="h-5 w-5" />
-					<span class="sr-only">Messages</span>
-				</Button>
-			</div>
-		</div>
-	</div>
-	<div class="container p-0">
-		<PostList postIds={data.posts} viewer={data.user} />
-	</div>
+{#if $page.data.user}
+	<Feed user={$page.data.user} posts={$page.data.posts} />
 {:else}
 	<AccountLogIn />
 {/if}
