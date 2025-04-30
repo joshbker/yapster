@@ -12,4 +12,8 @@ Social media website, a college project.
 - [ ] Figure out what is imposing my 512KB limit so I can make it bigger :D
 - [ ] Add image editor to drag and resize avatar and banner
 - [ ] Make Account Settings work
-- [ ] Add posts
+- [x] Add posts
+- [ ] Support media on posts properly
+- [ ] Improve video post dynamic background so synced to current frame when fetched
+- [ ] Fix volume slider overlapping fullscreen button on video on mobile device
+- [ ] Add interacting with posts (likes, comments, sharing, saving, etc)
