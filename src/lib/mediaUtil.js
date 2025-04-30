@@ -10,11 +10,11 @@ export const acceptedTypes = [
     'video/webm'
 ];
 
-export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB hard limit
+export const MAX_FILE_SIZE = 512 * 1024; // 512KB hard limit
 
 // Image compression options
 export const compressionOptions = {
-    maxSizeMB: 4.9, // Just under 5MB
+    maxSizeMB: 0.5, // Just under 512KB
     maxWidthOrHeight: 1920,
     useWebWorker: true,
     initialQuality: 0.8
@@ -40,7 +40,7 @@ export function validateImageFile(file, acceptedFileTypes = acceptedTypes) {
         return {
             valid: false,
             needsCompression: true,
-            error: `File too large. Maximum size is 5MB. Current size: ${(file.size / 1024 / 1024).toFixed(1)}MB`
+            error: `File too large. Maximum size is 512KB. Current size: ${(file.size / 1024).toFixed(1)}KB`
         };
     }
 
@@ -70,7 +70,7 @@ export async function compressImage(file, isAvatar = false) {
         // Validate the compressed file
         const validation = validateImageFile(compressedFile);
         if (!validation.valid) {
-            throw new Error(`Could not compress image to required size. Final size: ${(compressedFile.size / 1024 / 1024).toFixed(1)}MB`);
+            throw new Error(`Could not compress image to required size. Final size: ${(compressedFile.size / 1024).toFixed(1)}KB`);
         }
 
         return compressedFile;

@@ -45,7 +45,7 @@ export async function POST({ request, url, locals }) {
         }
 
         // Validate file size
-        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB hard limit for all images
+        const MAX_FILE_SIZE = 512 * 1024;
         
         if (imageFile.size > MAX_FILE_SIZE) {
             console.error('File too large:', {
@@ -53,7 +53,7 @@ export async function POST({ request, url, locals }) {
                 maxSize: MAX_FILE_SIZE
             });
             return json({ 
-                error: `Image file is too large. Maximum size is 5MB.`,
+                error: `Image file is too large. Maximum size is 512KB.`,
                 maxSizeKB: MAX_FILE_SIZE / 1024
             }, { status: 400 });
         }

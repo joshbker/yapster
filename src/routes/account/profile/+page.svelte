@@ -42,7 +42,7 @@
 
     // Image compression options
     const compressionOptions = {
-        maxSizeMB: 4.9, // Just under 5MB
+        maxSizeMB: 0.5, // Just under 512KB
         maxWidthOrHeight: 1920,
         useWebWorker: true,
         initialQuality: 0.8

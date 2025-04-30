@@ -38,7 +38,7 @@
                     toast.error('Unsupported file type');
                     continue;
                 } else if (file.size > MAX_FILE_SIZE) {
-                    toast.error('File too large (max 5MB)');
+                    toast.error('File too large (max 512KB)');
                     continue;
                 }
 
@@ -178,7 +178,7 @@
                         {/if}
                     </div>
                     <p class="text-sm text-muted-foreground">
-                        You can upload up to {MAX_FILES} photos or videos (max 5MB each)
+                        You can upload up to {MAX_FILES} photos or videos (max 512KB each)
                     </p>
                 </div>
 
