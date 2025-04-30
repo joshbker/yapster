@@ -1,12 +1,12 @@
 <script>
-    import { Tabs, TabsContent, TabsList, TabsTrigger } from "$lib/component/ui/tabs"
+    import { Tabs, TabsList, TabsTrigger } from "$lib/component/ui/tabs"
     import { Loader2 } from "lucide-svelte"
     import ProfileCardSlim from "$lib/component/profile/ProfileCardSlim.svelte"
     import HeaderNavigation from "$lib/component/HeaderNavigation.svelte"
     import { page } from '$app/stores';
     import { goto } from '$app/navigation';
     import { writable } from 'svelte/store';
-    import { getUserById, getUserByUsername } from "$lib/util";
+    import { getUserById } from "$lib/util";
     import { onMount } from 'svelte';
 
     const PAGE_SIZE = 20;
