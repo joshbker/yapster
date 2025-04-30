@@ -285,7 +285,7 @@
         <img 
             src={previewAvatarUrl ?? PUBLIC_DEFAULT_AVATAR_URL} 
             alt="Avatar" 
-            class="w-full h-full object-cover"
+            class="w-full h-full object-cover bg-background"
         />
         <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
             {#if isProcessingAvatar}

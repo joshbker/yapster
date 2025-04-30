@@ -100,7 +100,7 @@
                         data-sveltekit-preload-data="off"
                         class="flex-shrink-0"
                     >
-                        <img src={author.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="w-10 h-10 rounded-full object-cover" />
+                        <img src={author.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="w-10 h-10 rounded-full object-cover bg-background" />
                     </HoverCard.Trigger>
                     <HoverCard.Content class="w-80">
                         <ProfileCard user={author} viewer={viewer} />

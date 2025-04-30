@@ -51,11 +51,11 @@
 
 <div class="relative lg:container lg:max-w-5xl lg:px-6 lg:py-6">
     {#if user.banner}
-        <img src={user.banner} alt="Banner" class="w-full h-32 lg:h-48 object-cover lg:rounded-xl">
+        <img src={user.banner} alt="Banner" class="w-full h-32 lg:h-48 object-cover lg:rounded-xl bg-background">
     {:else}
         <div class="w-full h-32 lg:h-48 lg:rounded-xl bg-gradient-to-br from-purple-500 to-blue-400"></div>
     {/if}
-    <img src={user.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="absolute left-3 lg:left-14 -bottom-8 lg:-bottom-2 w-24 h-24 rounded-full object-cover border-4 border-background">
+    <img src={user.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="absolute left-3 lg:left-14 -bottom-8 lg:-bottom-2 w-24 h-24 rounded-full object-cover border-4 border-background bg-background">
 </div>
 <div class="container max-w-4xl px-0 py-2 mt-6 lg:mt-0">
     <div class="flex flex-col mx-4 lg:mx-0">

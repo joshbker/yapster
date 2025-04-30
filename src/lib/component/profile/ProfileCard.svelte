@@ -14,14 +14,14 @@
 <a class="border rounded-lg flex flex-col" href={`/@${user.username}`} data-sveltekit-preload-data="off">
     <div class="relative">
         {#if user.banner}
-            <img src={user.banner} alt="Banner" class="w-full h-24 object-cover rounded-t-lg">
+            <img src={user.banner} alt="Banner" class="w-full h-24 object-cover rounded-t-lg bg-background">
         {:else}
             <div class="w-full h-24 bg-gradient-to-br from-purple-500 to-blue-400 rounded-t-lg"></div>
         {/if}
         <img 
             src={user.image ?? PUBLIC_DEFAULT_AVATAR_URL} 
             alt={user.username}
-            class="absolute left-4 -bottom-6 w-16 h-16 rounded-full object-cover border-[3px] border-background"
+            class="absolute left-4 -bottom-6 w-16 h-16 rounded-full object-cover border-[3px] border-background bg-background"
         >
     </div>
     

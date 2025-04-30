@@ -26,7 +26,7 @@
     on:click={handleClick}
 >
     <div class="flex items-center gap-3">
-        <img src={user.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="w-10 h-10 rounded-full">
+        <img src={user.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="w-10 h-10 rounded-full bg-background">
         <div class="flex flex-col items-start">
             <div class="flex items-center gap-1.5">
                 <p class="font-medium">{user.name ?? user.username}</p>
