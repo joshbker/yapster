@@ -96,7 +96,7 @@
             <div class="flex items-start gap-2">
                 <HoverCard.Root>
                     <HoverCard.Trigger
-                        href={`/${author.username}`}
+                        href={`/@${author.username}`}
                         data-sveltekit-preload-data="off"
                     >
                         <img src={author.image ?? PUBLIC_DEFAULT_AVATAR_URL} alt="Avatar" class="w-10 h-10 rounded-full object-cover" />
@@ -108,7 +108,7 @@
                 <div class="flex flex-col">
                     <HoverCard.Root>
                         <HoverCard.Trigger
-                            href={`/${author.username}`}
+                            href={`/@${author.username}`}
                             data-sveltekit-preload-data="off"
                         >
                             <div class="flex items-center gap-2.5">
