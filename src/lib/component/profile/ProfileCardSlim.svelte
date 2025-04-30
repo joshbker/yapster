@@ -43,7 +43,6 @@
     {#if viewer.username !== user.username}
         <div class="flex items-center gap-2">
             <FollowActions {user} {viewer} />
-            <MessageActions {user} {viewer} />
             <ProfileActions {user} {viewer} /> 
         </div>
     {/if}

@@ -9,6 +9,8 @@
     import { getUserById } from "$lib/util";
     import { onMount } from 'svelte';
 
+    const user = $page.data.displayedUser;
+
     const PAGE_SIZE = 20;
     
     // Stores for data management
@@ -17,17 +19,16 @@
     const isLoadingMore = writable(false);
     
     let followersContainer;
-    $: user = $page.data.user;
 
     // Initialize data when component mounts
-    onMount(async () => {
+    onMount(() => {
         // Initialize counts
         $followersCount = user.followers?.length ?? 0;
         loadMoreFollowers();
     });
 
     async function loadMoreFollowers() {
-        if ($isLoadingMore || !user) return;
+        if ($isLoadingMore) return;
         
         $isLoadingMore = true;
         try {

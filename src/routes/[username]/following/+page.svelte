@@ -9,6 +9,8 @@
     import { getUserById } from "$lib/util";
     import { onMount } from 'svelte';
 
+    const user = $page.data.displayedUser;
+
     const PAGE_SIZE = 20;
     
     // Stores for data management
@@ -17,8 +19,7 @@
     const isLoadingMore = writable(false);
     
     let followingContainer;
-    $: user = $page.data.user;
-
+    
     // Initialize data when component mounts
     onMount(async () => {
         // Initialize counts
