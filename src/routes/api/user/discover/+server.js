@@ -1,5 +1,6 @@
 import { json, error } from "@sveltejs/kit"
 import { user as User } from "$lib/data/model/user.js"
+import { ObjectId } from "mongodb"
 
 export const GET = async ({ locals }) => {
     if (!locals.user) {
@@ -8,7 +9,7 @@ export const GET = async ({ locals }) => {
 
     try {
         const users = await User.aggregate([
-            { $match: { _id: { $ne: locals.user.id } } },
+            { $match: { _id: { $ne: ObjectId.createFromHexString(locals.user.id) } } },
             { 
                 $addFields: {
                     followersCount: { $size: "$followers" }
