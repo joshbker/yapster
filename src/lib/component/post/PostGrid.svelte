@@ -78,6 +78,8 @@
                                 src={post.content.items[0]}
                                 class="w-full h-full object-cover"
                                 preload="metadata"
+                                poster={post.content.items[0] + '#t=0.1'}
+                                loading="lazy"
                                 muted
                                 playsinline
                                 disablePictureInPicture
