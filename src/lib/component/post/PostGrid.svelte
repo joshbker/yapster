@@ -9,11 +9,22 @@
     let posts = [];
     let loading = true;
     let error = null;
+    let thumbnails = new Map();
 
     // Helper function to check if a URL is a video
     function isVideo(url) {
         if (!url) return false;
         return url.match(/\.(mp4|webm|ogg)($|\?)/i) !== null;
+    }
+
+    // Function to generate video thumbnail
+    function generateThumbnail(video, postId) {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        thumbnails.set(postId, canvas.toDataURL());
+        thumbnails = thumbnails; // Trigger Svelte reactivity
     }
 
     async function loadPosts() {
@@ -73,18 +84,24 @@
                 <a href="/p/{post.id}" class="aspect-square block relative group overflow-hidden rounded-lg hover:opacity-90 transition-opacity">
                     {#if post.content?.items?.[0]}
                         {#if isVideo(post.content.items[0])}
-                            <video 
-                                src={post.content.items[0]}
-                                class="w-full h-full object-cover"
-                                preload="metadata"
-                                poster={post.content.items[0] + '#t=0.1'}
-                                loading="lazy"
-                                muted
-                                playsinline
-                                disablePictureInPicture
-                            >
-                                <track kind="captions">
-                            </video>
+                            <div class="relative w-full h-full">
+                                {#if thumbnails.get(post.id)}
+                                    <img 
+                                        src={thumbnails.get(post.id)} 
+                                        alt="Video thumbnail"
+                                        class="w-full h-full object-cover"
+                                    />
+                                {/if}
+                                <video 
+                                    src={post.content.items[0]}
+                                    class="hidden"
+                                    preload="metadata"
+                                    muted
+                                    on:loadeddata={(e) => generateThumbnail(e.target, post.id)}
+                                >
+                                    <track kind="captions">
+                                </video>
+                            </div>
                         {:else}
                             <img 
                                 src={post.content.items[0]} 
