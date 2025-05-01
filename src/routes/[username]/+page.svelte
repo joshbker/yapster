@@ -63,7 +63,7 @@
             <div class="container-type-inline-size min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                     <div class="flex items-center gap-1.5 min-w-0">
-                        <h1 class="text-lg font-bold truncate flex-shrink max-w-[220px] lg:max-w-none">{user.name ?? user.username}</h1>
+                        <h1 class="text-lg font-bold truncate min-w-0 flex-1">{user.name ?? user.username}</h1>
                         {#if user.verified}
                             <BadgeVerified class="flex-shrink-0" />
                         {/if}

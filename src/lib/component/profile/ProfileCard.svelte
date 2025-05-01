@@ -26,30 +26,36 @@
     </div>
     
     <div class="p-6 pt-6 flex flex-col bg-background">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-                <div class="flex items-center gap-1.5">
-                    <h2 class="font-semibold">{user.name ?? user.username}</h2>
-                    {#if user.verified}
-                        <BadgeVerified />
-                    {/if}
-                </div>
-                <div class="flex items-center gap-1.5">
-                    {#if user.name}
-                        <p class="text-sm font-medium text-muted-foreground">{user.username}</p>
-                    {/if}
-                    {#if user.pronouns}
-                        <Circle class="h-1.5 w-1.5 fill-muted-foreground text-muted-foreground -mb-0.5" />
-                        <p class="text-sm font-medium text-muted-foreground">{user.pronouns}</p>
-                    {/if}
+        <div class="flex items-start justify-between">
+            <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                    <div class="flex items-center gap-1.5 min-w-0">
+                        <h2 class="font-semibold truncate min-w-0 flex-1">{user.name ?? user.username}</h2>
+                        {#if user.verified}
+                            <BadgeVerified class="flex-shrink-0" />
+                        {/if}
+                    </div>
+                    <div class="flex items-center gap-1.5 min-w-0 max-w-[300px]">
+                        {#if user.name}
+                            <p class="text-sm font-medium text-muted-foreground truncate min-w-0 flex-1">{user.username}</p>
+                        {/if}
+                        {#if user.pronouns}
+                            <div class="flex items-center gap-1.5 min-w-0 flex-shrink-0">
+                                <Circle class="h-1.5 w-1.5 fill-muted-foreground text-muted-foreground -mb-0.5" />
+                                <p class="text-sm font-medium text-muted-foreground truncate min-w-0 max-w-[120px]">{user.pronouns}</p>
+                            </div>
+                        {/if}
+                    </div>
                 </div>
             </div>
             {#if user.id != viewer.id}
-                <ProfileActions {user} {viewer} />
+                <div class="flex-shrink-0 ml-4">
+                    <ProfileActions {user} {viewer} />
+                </div>
             {/if}
         </div>
 
-        <p class="text-sm whitespace-pre-wrap line-clamp-1">{user.bio ?? "No bio yet."}</p>
+        <p class="text-sm whitespace-pre-wrap line-clamp-1 mt-1">{user.bio ?? "No bio yet."}</p>
 
         <div class="mt-3">
             <ProfileStats {user} />
