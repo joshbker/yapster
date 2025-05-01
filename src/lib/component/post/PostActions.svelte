@@ -71,9 +71,33 @@
         }
     }
 
+    async function handleComment() {
+        alert("Comment")
+    }
+
     async function handleShare() {
         await navigator.clipboard.writeText(`${PUBLIC_BASE_URL}/p/${post.id}`);
         toast.success("Link copied to clipboard!");
+    }
+
+    async function handleReportPost() {
+        alert("Report Post");
+    }
+
+    async function handleBlockUser() {
+        alert("Block User");
+    }
+    
+    async function handleIgnoreUser() {
+        alert("Ignore User");
+    }
+
+    async function handleEditPost() {
+        alert("Edit Post");
+    }
+    
+    async function handleDeletePost() {
+        alert("Delete Post");
     }
 </script>
 
@@ -87,7 +111,10 @@
             <Heart class="h-4 w-4" fill={$likeState ? "currentColor" : "none"} />
             <span class="text-sm">{$likeCount}</span>
         </button>
-        <button class="flex items-center gap-2 hover:text-blue-400 transition-colors">
+        <button 
+            class="flex items-center gap-2 hover:text-blue-400 transition-colors"
+            on:click={handleComment}
+        >
             <MessageCircle class="h-4 w-4" />
             <span class="text-sm">{post.comments?.length ?? 0}</span>
         </button>
@@ -114,34 +141,24 @@
                     </DropdownMenuItem>
                 {/if}
                 {#if viewer.id !== post.author.id}
-                    <DropdownMenuItem class="gap-2 !text-destructive" on:click={() => {
-                        alert("Delete Post");
-                    }}>
+                    <DropdownMenuItem class="gap-2 !text-destructive" on:click={handleReportPost}>
                     <Flag class="h-4 w-4" />
                         <p>Report Post</p>
                     </DropdownMenuItem>
-                    <DropdownMenuItem class="gap-2 !text-destructive" on:click={() => {
-                        alert("Block User");
-                    }}>
+                    <DropdownMenuItem class="gap-2 !text-destructive" on:click={handleBlockUser}>
                         <Ban class="h-4 w-4" />
                         <p>Block User</p>
                     </DropdownMenuItem>
-                    <DropdownMenuItem class="gap-2" on:click={() => {
-                        alert("Ignore User");
-                    }}>
+                    <DropdownMenuItem class="gap-2" on:click={handleIgnoreUser}>
                         <BellOff class="h-4 w-4" />
                         <p>Ignore User</p>
                     </DropdownMenuItem>
                 {:else}
-                    <DropdownMenuItem class="gap-2" on:click={() => {
-                        alert("Edit Post");
-                    }}>
+                    <DropdownMenuItem class="gap-2" on:click={handleEditPost}>
                         <Pencil class="h-4 w-4" />
                         <p>Edit Post</p>
                     </DropdownMenuItem>
-                    <DropdownMenuItem class="gap-2 !text-destructive" on:click={() => {
-                        alert("Delete Post");
-                    }}>
+                    <DropdownMenuItem class="gap-2 !text-destructive" on:click={handleDeletePost}>
                         <Trash class="h-4 w-4" />
                         <p>Delete Post</p>
                     </DropdownMenuItem>
