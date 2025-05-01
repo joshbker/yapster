@@ -5,6 +5,7 @@
     import { writable } from 'svelte/store';
     import LikesDrawer from "$lib/component/post/LikesDrawer.svelte";
     import { getUserById } from "$lib/util";
+    import { triggerLikeUpdate } from "$lib/data/likeStore";
 
     export let comment;
     export let viewer;
@@ -19,25 +20,47 @@
     const likeUsers = writable([]);
     const isLoadingLikes = writable(false);
 
-    // Make isLiked and likeCount fully reactive using the stores
-    $: $likeState = comment.likes?.includes(viewer?.id) ?? false;
-    $: $likeCount = comment.likes?.length ?? 0;
+    // Initialize the stores once
+    $: {
+        if (comment?.likes) {
+            $likeState = comment.likes.includes(viewer?.id) ?? false;
+            $likeCount = comment.likes.length;
+        }
+    }
 
     // Load users who liked when drawer opens
-    $: if (drawerOpen && comment.likes && (!$likeUsers.length || $likeUsers.length !== comment.likes.length)) {
+    $: if (drawerOpen && !$isLoadingLikes && comment?.likes?.length > 0 && $likeUsers.length === 0) {
         loadLikeUsers();
     }
 
     async function loadLikeUsers() {
-        if ($isLoadingLikes) return;
-        
+        if ($isLoadingLikes || !Array.isArray(comment?.likes)) {
+            return;
+        }
+
+        if (comment.likes.length === 0) {
+            $likeUsers = [];
+            return;
+        }
+
         $isLoadingLikes = true;
         try {
-            const users = await Promise.all(comment.likes.map(id => getUserById(id)));
-            $likeUsers = users.filter(Boolean);
+            // Load users in batches of 5 to prevent overwhelming the server
+            const batchSize = 5;
+            const batches = [];
+            
+            for (let i = 0; i < comment.likes.length; i += batchSize) {
+                const batch = comment.likes.slice(i, i + batchSize);
+                const users = await Promise.all(batch.map(id => getUserById(id)));
+                batches.push(...users);
+                
+                // Update the store with each batch
+                $likeUsers = batches.filter(Boolean);
+            }
         } catch (err) {
             console.error('Failed to load users who liked:', err);
             toast.error("Failed to load users");
+            $likeUsers = [];
         } finally {
             $isLoadingLikes = false;
         }
@@ -90,6 +113,9 @@
                 // Like: Add user ID to likes array
                 comment.likes = [...(comment.likes || []), viewer.id];
             }
+
+            // Trigger like update
+            triggerLikeUpdate(comment.id);
         } catch (err) {
             console.error('Failed to like/unlike comment:', err);
             toast.error("Failed to like comment");
@@ -134,6 +160,7 @@
             {viewer}
             likeState={$likeState}
             size="xs"
+            id={comment.id}
         />
     </div>
     <DropdownMenu>

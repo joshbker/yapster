@@ -7,6 +7,7 @@
     import { page } from "$app/stores";
     import { writable } from 'svelte/store';
     import LikesDrawer from "./LikesDrawer.svelte";
+    import { triggerLikeUpdate } from "$lib/data/likeStore";
 
     export let post;
     export let author;
@@ -18,9 +19,13 @@
     let likeDebounceTimeout;
     let drawerOpen = false;
 
-    // Make isLiked and likeCount fully reactive using the stores
-    $: $likeState = post.likes?.includes(viewer?.id) ?? false;
-    $: $likeCount = post.likes?.length ?? 0;
+    // Initialize the stores once
+    $: {
+        if (post?.likes) {
+            $likeState = post.likes.includes(viewer?.id) ?? false;
+            $likeCount = post.likes.length;
+        }
+    }
 
     // Debounced like function
     function debouncedLike() {
@@ -66,6 +71,9 @@
                 // Like: Add user ID to likes array
                 post.likes = [...(post.likes || []), viewer.id];
             }
+
+            // Trigger like update
+            triggerLikeUpdate(post.id);
         } catch (err) {
             console.error('Failed to like/unlike:', err);
             toast.error(err.message);
@@ -119,6 +127,7 @@
                 likes={post.likes}
                 {viewer}
                 likeState={$likeState}
+                id={post.id}
             />
         </div>
         <a 

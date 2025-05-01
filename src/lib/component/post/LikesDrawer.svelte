@@ -6,32 +6,74 @@
     import { toast } from "svelte-sonner";
     import ProfileCardSlim from "$lib/component/profile/ProfileCardSlim.svelte";
     import { Loader2 } from "lucide-svelte";
+    import { updatedLikes } from "$lib/data/likeStore";
 
     export let open = false;
     export let likes = [];
     export let viewer;
     export let likeState = false;
     export let size = "sm";
+    export let id; // Add this prop to identify which post/comment this drawer belongs to
 
     // Store for users who liked
     const likeUsers = writable([]);
     const isLoadingLikes = writable(false);
+    let hasInitiallyLoaded = false;
 
-    // Load users who liked when drawer opens
-    $: if (open && likes && (!$likeUsers.length || $likeUsers.length !== likes.length)) {
+    // Only load users when drawer opens and we haven't loaded them yet
+    $: if (open && !hasInitiallyLoaded && !$isLoadingLikes) {
+        hasInitiallyLoaded = true;
         loadLikeUsers();
     }
 
+    // Reset loaded state when likes array changes
+    $: if (likes) {
+        if (!Array.isArray(likes) || likes.length === 0) {
+            $likeUsers = [];
+            hasInitiallyLoaded = true;
+        } else if ($likeUsers.length > 0 && $likeUsers.length !== likes.length) {
+            // Only reset if we had previously loaded users and the count changed
+            hasInitiallyLoaded = false;
+            $likeUsers = [];
+        }
+    }
+
+    // Listen for updates to this post/comment's likes
+    $: if (id && $updatedLikes.has(id)) {
+        hasInitiallyLoaded = false;
+        if (open) {
+            loadLikeUsers();
+        }
+    }
+
     async function loadLikeUsers() {
-        if ($isLoadingLikes) return;
-        
+        if ($isLoadingLikes || !Array.isArray(likes)) {
+            return;
+        }
+
+        if (likes.length === 0) {
+            $likeUsers = [];
+            return;
+        }
+
         $isLoadingLikes = true;
         try {
-            const users = await Promise.all(likes.map(id => getUserById(id)));
-            $likeUsers = users.filter(Boolean);
+            // Load users in batches of 5 to prevent overwhelming the server
+            const batchSize = 5;
+            const batches = [];
+            
+            for (let i = 0; i < likes.length; i += batchSize) {
+                const batch = likes.slice(i, i + batchSize);
+                const users = await Promise.all(batch.map(id => getUserById(id)));
+                batches.push(...users);
+                
+                // Update the store with each batch
+                $likeUsers = batches.filter(Boolean);
+            }
         } catch (err) {
             console.error('Failed to load users who liked:', err);
             toast.error("Failed to load users");
+            $likeUsers = [];
         } finally {
             $isLoadingLikes = false;
         }
