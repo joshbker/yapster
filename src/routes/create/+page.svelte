@@ -6,8 +6,9 @@
     import { Label } from '$lib/component/ui/label';
     import { toast } from "svelte-sonner";
     import { goto } from '$app/navigation';
-    import { MapPin, Image as ImageIcon, Hash } from 'lucide-svelte';
-    import { acceptedTypes, MAX_FILE_SIZE, processImageFile } from '$lib/mediaUtil';
+    import { MapPin, Hash } from 'lucide-svelte';
+    // import { Image as ImageIcon } from 'lucide-svelte';
+    // import { acceptedTypes, MAX_FILE_SIZE, processImageFile } from '$lib/mediaUtil';
 
     let isLoading = false;
     let error = '';
@@ -16,50 +17,50 @@
     let text = '';
     let location = '';
     let tags = '';
-    let mediaFiles = [];
-    let previewUrls = [];
+    // let mediaFiles = [];
+    // let previewUrls = [];
 
-    const MAX_FILES = 9; // Maximum number of media files
+    // const MAX_FILES = 9; // Maximum number of media files
 
-    async function handleFileSelect(event) {
-        const files = Array.from(event.target.files || []);
+    // async function handleFileSelect(event) {
+    //     const files = Array.from(event.target.files || []);
         
-        if (mediaFiles.length + files.length > MAX_FILES) {
-            toast.error(`You can only upload up to ${MAX_FILES} files`);
-            return;
-        }
+    //     if (mediaFiles.length + files.length > MAX_FILES) {
+    //         toast.error(`You can only upload up to ${MAX_FILES} files`);
+    //         return;
+    //     }
 
-        for (const file of files) {
-            try {
-                let processedFile = file;
-                if (file.type.startsWith('image/')) {
-                    processedFile = await processImageFile(file);
-                } else if (!acceptedTypes.includes(file.type)) {
-                    toast.error('Unsupported file type');
-                    continue;
-                } else if (file.size > MAX_FILE_SIZE) {
-                    toast.error('File too large (max 512KB)');
-                    continue;
-                }
+    //     for (const file of files) {
+    //         try {
+    //             let processedFile = file;
+    //             if (file.type.startsWith('image/')) {
+    //                 processedFile = await processImageFile(file);
+    //             } else if (!acceptedTypes.includes(file.type)) {
+    //                 toast.error('Unsupported file type');
+    //                 continue;
+    //             } else if (file.size > MAX_FILE_SIZE) {
+    //                 toast.error('File too large (max 512KB)');
+    //                 continue;
+    //             }
 
-                mediaFiles = [...mediaFiles, processedFile];
-                const url = URL.createObjectURL(processedFile);
-                previewUrls = [...previewUrls, url];
-            } catch (err) {
-                console.error('Error processing file:', err);
-                toast.error(err.message || 'Error processing file');
-            }
-        }
-    }
+    //             mediaFiles = [...mediaFiles, processedFile];
+    //             const url = URL.createObjectURL(processedFile);
+    //             previewUrls = [...previewUrls, url];
+    //         } catch (err) {
+    //             console.error('Error processing file:', err);
+    //             toast.error(err.message || 'Error processing file');
+    //         }
+    //     }
+    // }
 
-    function removeMedia(index) {
-        URL.revokeObjectURL(previewUrls[index]);
-        mediaFiles = mediaFiles.filter((_, i) => i !== index);
-        previewUrls = previewUrls.filter((_, i) => i !== index);
-    }
+    // function removeMedia(index) {
+    //     URL.revokeObjectURL(previewUrls[index]);
+    //     mediaFiles = mediaFiles.filter((_, i) => i !== index);
+    //     previewUrls = previewUrls.filter((_, i) => i !== index);
+    // }
 
     async function handleSubmit() {
-        if (!text.trim() && mediaFiles.length === 0) {
+        if (!text.trim()) {
             toast.error('Please add some content to your post');
             return;
         }
@@ -68,17 +69,6 @@
         error = '';
 
         try {
-            // Upload media files first if any
-            const uploadedItems = [];
-            for (const file of mediaFiles) {
-                // TODO: Implement media upload endpoint and add the URLs to uploadedItems array
-                // const formData = new FormData();
-                // formData.append('file', file);
-                // const response = await fetch('/api/upload', { method: 'POST', body: formData });
-                // const { url } = await response.json();
-                // uploadedItems.push(url);
-            }
-
             // Create the post
             const response = await fetch('/api/me/post', {
                 method: 'POST',
@@ -90,7 +80,7 @@
                         text: text.trim(),
                         location: location.trim(),
                         tags: tags.trim().split(/[,\s]+/).filter(Boolean),
-                        items: uploadedItems
+                        items: [] // Empty array for now since media is not supported
                     }
                 })
             });
@@ -120,7 +110,7 @@
     <Card class="border-border bg-card">
         <CardHeader>
             <CardTitle class="text-2xl font-semibold">Create a Post</CardTitle>
-            <CardDescription>Share your thoughts, images, or videos</CardDescription>
+            <CardDescription>Share your thoughts</CardDescription>
         </CardHeader>
         <CardContent>
             <form class="space-y-6" on:submit|preventDefault={handleSubmit}>
@@ -135,8 +125,8 @@
                     />
                 </div>
 
-                <!-- Media Upload -->
-                <div class="space-y-2">
+                <!-- Media Upload - Commented out for now -->
+                <!-- <div class="space-y-2">
                     <Label for="media">Add Photos or Videos</Label>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         {#each previewUrls as url, index}
@@ -180,7 +170,7 @@
                     <p class="text-sm text-muted-foreground">
                         You can upload up to {MAX_FILES} photos or videos (max 512KB each)
                     </p>
-                </div>
+                </div> -->
 
                 <!-- Location -->
                 <div class="space-y-2">
