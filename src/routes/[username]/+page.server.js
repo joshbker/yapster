@@ -23,6 +23,3 @@ export const load = async ({ params, locals, fetch }) => {
         displayedUser: userData
     }
 }
-
-export const ssr = true; // Force server-side rendering for this route
-export const csr = true; // Enable client-side rendering after initial SSR
