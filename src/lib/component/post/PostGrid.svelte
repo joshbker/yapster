@@ -81,6 +81,9 @@
                                     muted
                                     playsinline
                                     poster={`${post.content.items[0]}#t=0.0001`}
+                                    on:play|preventDefault={(e) => e.target.pause()}
+                                    controls={false}
+                                    webkit-playsinline
                                 >
                                     <track kind="captions">
                                 </video>
