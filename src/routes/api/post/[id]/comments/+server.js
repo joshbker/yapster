@@ -22,7 +22,8 @@ export const GET = async ({ params }) => {
                 text: 1,
                 timestamp: 1,
                 likes: 1,
-                author: 1
+                author: 1,
+                post: 1  // Include the post ID in the response
             }}
         ]);
 
@@ -34,7 +35,17 @@ export const GET = async ({ params }) => {
             }
         }
 
-        return json(comments);
+        // Transform _id to id for consistency
+        const transformedComments = comments.map(comment => ({
+            id: comment._id,
+            text: comment.text,
+            timestamp: comment.timestamp,
+            likes: comment.likes,
+            author: comment.author,
+            post: comment.post
+        }));
+
+        return json(transformedComments);
     } catch (err) {
         console.error(err)
         throw error(500, "Failed to fetch comments")
