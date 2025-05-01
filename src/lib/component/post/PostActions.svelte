@@ -128,7 +128,7 @@
             <span class="text-sm">{post.saves?.length ?? 0}</span>
         </button>
         <DropdownMenu>
-            <DropdownMenuTrigger as-child>
+            <DropdownMenuTrigger>
                 <button class="hover:bg-foreground/10 rounded-lg p-2 transition-colors">
                     <MoreHorizontal class="h-4 w-4" />
                 </button>   
