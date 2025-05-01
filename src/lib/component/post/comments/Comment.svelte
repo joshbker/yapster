@@ -8,7 +8,8 @@
     import { onMount } from "svelte";
     import { writable } from "svelte/store";
     import CommentActions from "./CommentActions.svelte";
-
+    import ParsedText from "$lib/component/common/ParsedText.svelte";
+    
     export let comment;
     export let viewer;
 
@@ -76,7 +77,9 @@
                             {getTimeAgo(new Date(comment.timestamp))}
                         </span>
                     </div>
-                    <p class="text-sm mt-1">{comment.text}</p>
+                    <p class="text-sm mt-1">
+                        <ParsedText text={comment.text} {viewer} />
+                    </p>
                 </div>
             </div>
         </div>
