@@ -99,18 +99,30 @@
     async function handleDeletePost() {
         alert("Delete Post");
     }
+
+    async function showLikes() {
+        alert("Show users who liked this post");
+        // TODO: Implement showing users who liked the post
+    }
 </script>
 
 <div class="flex w-full justify-between">
     <div class="flex items-center gap-3">
-        <button 
-            class="flex items-center gap-2 transition-colors {$likeState ? 'text-red-500 hover:text-red-600' : 'hover:text-red-500'}" 
-            on:click={debouncedLike}
-            disabled={isLikeLoading}
-        >
-            <Heart class="h-4 w-4" fill={$likeState ? "currentColor" : "none"} />
-            <span class="text-sm">{$likeCount}</span>
-        </button>
+        <div class="flex items-center">
+            <button 
+                class="transition-colors p-2 {$likeState ? 'text-red-500 hover:text-red-600' : 'hover:text-red-500'}" 
+                on:click={debouncedLike}
+                disabled={isLikeLoading}
+            >
+                <Heart class="h-4 w-4" fill={$likeState ? "currentColor" : "none"} />
+            </button>
+            <button 
+                class="text-sm hover:underline px-1 {$likeState ? 'text-red-500 hover:text-red-600' : ''}" 
+                on:click={showLikes}
+            >
+                {$likeCount}
+            </button>
+        </div>
         <button 
             class="flex items-center gap-2 hover:text-blue-400 transition-colors"
             on:click={handleComment}
