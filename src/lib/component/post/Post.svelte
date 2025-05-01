@@ -11,6 +11,7 @@
     import { Button } from "$lib/component/ui/button";
     import * as HoverCard from "$lib/component/ui/hover-card/index.js";
     import ProfileCard from "$lib/component/profile/ProfileCard.svelte";
+    import { getUserByUsername } from "$lib/util";
 
     export let post;
     export let author;
@@ -20,6 +21,7 @@
     let showCounter = false;
     let counterTimeout;
     let isSwiping = false;
+    let mentionedUsers = new Map();
 
     function isVideo(url) {
         const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
@@ -47,6 +49,74 @@
         if (isSwiping) {
             e.preventDefault();
         }
+    }
+
+    function parseMentions(text) {
+        const parts = [];
+        let lastIndex = 0;
+        const mentionRegex = /@(\w+)/g;
+        let match;
+
+        while ((match = mentionRegex.exec(text)) !== null) {
+            // Add text before the mention
+            if (match.index > lastIndex) {
+                parts.push({
+                    type: 'text',
+                    content: text.slice(lastIndex, match.index)
+                });
+            }
+
+            // Add the mention
+            parts.push({
+                type: 'mention',
+                username: match[1],
+                content: match[0]
+            });
+
+            lastIndex = match.index + match[0].length;
+        }
+
+        // Add remaining text after last mention
+        if (lastIndex < text.length) {
+            parts.push({
+                type: 'text',
+                content: text.slice(lastIndex)
+            });
+        }
+
+        // Clean up whitespace between parts
+        for (let i = 0; i < parts.length; i++) {
+            if (parts[i].type === 'text') {
+                // Preserve newlines but clean up extra spaces around mentions
+                parts[i].content = parts[i].content.replace(/\s+/g, (match) => {
+                    return match.includes('\n') ? match : ' ';
+                });
+                
+                // Remove space before mention if it's at the start
+                if (i === 0) {
+                    parts[i].content = parts[i].content.trimStart();
+                }
+                // Remove space after mention if it's at the end
+                if (i === parts.length - 1) {
+                    parts[i].content = parts[i].content.trimEnd();
+                }
+            }
+        }
+
+        return parts;
+    }
+
+    async function fetchUserData(username) {
+        if (!mentionedUsers.has(username)) {
+            try {
+                const userData = await getUserByUsername(username);
+                mentionedUsers.set(username, userData);
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                mentionedUsers.set(username, null);
+            }
+        }
+        return mentionedUsers.get(username);
     }
 
     onMount(() => {
@@ -135,7 +205,7 @@
                         </div>
                     </div>
                     {#if post.content.text}
-                        <p class="whitespace-pre-wrap text-sm break-words">{post.content.text}</p>
+                        <p class="whitespace-pre-wrap text-sm break-words">{#each parseMentions(post.content.text) as part}{#if part.type === 'mention'}{#await fetchUserData(part.username)}<span class="text-primary">{part.content}</span>{:then userData}{#if userData}<HoverCard.Root><HoverCard.Trigger href={`/@${part.username}`} data-sveltekit-preload-data="off" class="text-primary hover:text-primary/80 transition-colors">{part.content}</HoverCard.Trigger><HoverCard.Content class="w-80"><ProfileCard user={userData} {viewer} /></HoverCard.Content></HoverCard.Root>{:else}<span class="text-muted-foreground">{part.content}</span>{/if}{:catch}<span class="text-muted-foreground">{part.content}</span>{/await}{:else}{part.content}{/if}{/each}</p>
                     {/if}
                 </div>
             </div>
