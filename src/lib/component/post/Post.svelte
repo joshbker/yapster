@@ -54,11 +54,12 @@
     function parseMentions(text) {
         const parts = [];
         let lastIndex = 0;
-        const mentionRegex = /@(\w+)/g;
+        // Combined regex for mentions and links
+        const regex = /(@\w+)|(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g;
         let match;
 
-        while ((match = mentionRegex.exec(text)) !== null) {
-            // Add text before the mention
+        while ((match = regex.exec(text)) !== null) {
+            // Add text before the match
             if (match.index > lastIndex) {
                 parts.push({
                     type: 'text',
@@ -66,41 +67,30 @@
                 });
             }
 
-            // Add the mention
-            parts.push({
-                type: 'mention',
-                username: match[1],
-                content: match[0]
-            });
+            // Determine if it's a mention or link
+            if (match[1]) { // Mention
+                parts.push({
+                    type: 'mention',
+                    username: match[1].slice(1), // Remove @ symbol
+                    content: match[1]
+                });
+            } else { // Link
+                parts.push({
+                    type: 'link',
+                    url: match[2],
+                    content: match[2]
+                });
+            }
 
             lastIndex = match.index + match[0].length;
         }
 
-        // Add remaining text after last mention
+        // Add remaining text after last match
         if (lastIndex < text.length) {
             parts.push({
                 type: 'text',
                 content: text.slice(lastIndex)
             });
-        }
-
-        // Clean up whitespace between parts
-        for (let i = 0; i < parts.length; i++) {
-            if (parts[i].type === 'text') {
-                // Preserve newlines but clean up extra spaces around mentions
-                parts[i].content = parts[i].content.replace(/\s+/g, (match) => {
-                    return match.includes('\n') ? match : ' ';
-                });
-                
-                // Remove space before mention if it's at the start
-                if (i === 0) {
-                    parts[i].content = parts[i].content.trimStart();
-                }
-                // Remove space after mention if it's at the end
-                if (i === parts.length - 1) {
-                    parts[i].content = parts[i].content.trimEnd();
-                }
-            }
         }
 
         return parts;
@@ -205,7 +195,7 @@
                         </div>
                     </div>
                     {#if post.content.text}
-                        <p class="whitespace-pre-wrap text-sm break-words">{#each parseMentions(post.content.text) as part}{#if part.type === 'mention'}{#await fetchUserData(part.username)}<span class="text-primary">{part.content}</span>{:then userData}{#if userData}<HoverCard.Root><HoverCard.Trigger href={`/@${part.username}`} data-sveltekit-preload-data="off" class="text-primary hover:text-primary/80 transition-colors">{part.content}</HoverCard.Trigger><HoverCard.Content class="w-80"><ProfileCard user={userData} {viewer} /></HoverCard.Content></HoverCard.Root>{:else}<span class="text-muted-foreground">{part.content}</span>{/if}{:catch}<span class="text-muted-foreground">{part.content}</span>{/await}{:else}{part.content}{/if}{/each}</p>
+                        <p class="whitespace-pre-wrap text-sm break-words">{#each parseMentions(post.content.text) as part}{#if part.type === 'mention'}{#await fetchUserData(part.username)}<span class="text-primary">{part.content}</span>{:then userData}{#if userData}<HoverCard.Root><HoverCard.Trigger href={`/@${part.username}`} data-sveltekit-preload-data="off" class="text-primary hover:text-primary/80 transition-colors">{part.content}</HoverCard.Trigger><HoverCard.Content class="w-80"><ProfileCard user={userData} {viewer} /></HoverCard.Content></HoverCard.Root>{:else}<span class="text-muted-foreground">{part.content}</span>{/if}{:catch}<span class="text-muted-foreground">{part.content}</span>{/await}{:else if part.type === 'link'}<a href={part.url} target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 transition-colors">{part.content}</a>{:else}{part.content}{/if}{/each}</p>
                     {/if}
                 </div>
             </div>
