@@ -11,7 +11,7 @@
     export let viewer;
 </script>
 
-<a class="border rounded-lg flex flex-col" href={`/@${user.username}`} data-sveltekit-preload-data="off">
+<a class="border rounded-lg flex flex-col h-full" href={`/@${user.username}`} data-sveltekit-preload-data="off">
     <div class="relative">
         {#if user.banner}
             <img src={user.banner} alt="Banner" class="w-full h-24 object-cover rounded-t-lg bg-background">
@@ -25,7 +25,7 @@
         >
     </div>
     
-    <div class="p-6 pt-6 flex flex-col bg-background">
+    <div class="p-6 pt-6 flex flex-col flex-1 bg-background">
         <div class="flex items-start justify-between">
             <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
@@ -49,7 +49,7 @@
                 </div>
             </div>
             {#if user.id != viewer.id}
-                <div class="flex-shrink-0 ml-4">
+                <div class="flex-shrink-0 ml-4 -mt-1.5">
                     <ProfileActions {user} {viewer} />
                 </div>
             {/if}
@@ -57,15 +57,17 @@
 
         <p class="text-sm whitespace-pre-wrap line-clamp-1 mt-1">{user.bio ?? "No bio yet."}</p>
 
-        <div class="mt-3">
-            <ProfileStats {user} />
-        </div>
-
-        {#if user.id != viewer.id}
-            <div class="flex gap-2 mt-3">
-                <FollowActions {user} {viewer} iconOnly={false} className="w-full" />
-                <MessageActions {user} {viewer} iconOnly={false} className="w-full" />
+        <div class="flex flex-col mt-auto pt-3">
+            <div>
+                <ProfileStats {user} />
             </div>
-        {/if}
+
+            {#if user.id != viewer.id}
+                <div class="flex gap-2 mt-3">
+                    <FollowActions {user} {viewer} iconOnly={false} className="w-full" />
+                    <MessageActions {user} {viewer} iconOnly={false} className="w-full" />
+                </div>
+            {/if}
+        </div>
     </div>
 </a>
