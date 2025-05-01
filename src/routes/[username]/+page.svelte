@@ -127,7 +127,7 @@
 
     {#if viewer}
         <div class="mt-6">
-            <PostGrid postIds={[...user.posts].reverse()} {viewer} />
+            <PostGrid postIds={[...user.posts].reverse()} />
         </div>
     {:else}
         <div class="mt-12 w-full flex flex-col items-center gap-4">

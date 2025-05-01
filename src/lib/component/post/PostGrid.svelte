@@ -5,7 +5,6 @@
     import { updatedUsers } from "$lib/data/userStore";
 
     export let postIds = [];
-    export let viewer;
 
     let posts = [];
     let loading = true;
