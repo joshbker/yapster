@@ -9,7 +9,6 @@
     let posts = [];
     let loading = true;
     let error = null;
-    let thumbnails = new Map();
 
     // Helper function to check if a URL is a video
     function isVideo(url) {
@@ -17,14 +16,10 @@
         return url.match(/\.(mp4|webm|ogg)($|\?)/i) !== null;
     }
 
-    // Function to generate video thumbnail
-    function generateThumbnail(video, postId) {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-        thumbnails.set(postId, canvas.toDataURL());
-        thumbnails = thumbnails; // Trigger Svelte reactivity
+    // Function to get video thumbnail URL
+    function getVideoThumbnailUrl(videoUrl) {
+        // Replace video extension with jpg
+        return videoUrl.replace(/\.(mp4|webm|ogg)($|\?)/i, '.jpg');
     }
 
     async function loadPosts() {
@@ -85,19 +80,13 @@
                     {#if post.content?.items?.[0]}
                         {#if isVideo(post.content.items[0])}
                             <div class="relative w-full h-full">
-                                {#if thumbnails.get(post.id)}
-                                    <img 
-                                        src={thumbnails.get(post.id)} 
-                                        alt="Video thumbnail"
-                                        class="w-full h-full object-cover"
-                                    />
-                                {/if}
                                 <video 
                                     src={post.content.items[0]}
-                                    class="hidden"
+                                    class="w-full h-full object-cover"
                                     preload="metadata"
                                     muted
-                                    on:loadeddata={(e) => generateThumbnail(e.target, post.id)}
+                                    playsinline
+                                    poster={`${post.content.items[0]}#t=0.0001`}
                                 >
                                     <track kind="captions">
                                 </video>
