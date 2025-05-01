@@ -120,7 +120,15 @@ export async function getUserByUsername(username) {
     if (username.startsWith('@')) {
         username = username.slice(1)
     }
+
     const response = await fetch(`${PUBLIC_BASE_URL}/api/user/username/${username}`)
+
+    if (!response.ok) {
+        if (response.status === 404) {
+            return null;
+        }
+    }
+
     const data = await response.json()
     return data
 }
@@ -200,15 +208,15 @@ export const validateBio = (bio) => {
 }
 
 /**
- * Parses text content to identify mentions and links
+ * Parses text content to identify mentions, links, and hashtags
  * @param {string} text - The text to parse
- * @returns {Array<{type: 'text' | 'mention' | 'link', content: string, username?: string, url?: string}>}
+ * @returns {Array<{type: 'text' | 'mention' | 'link' | 'hashtag', content: string, username?: string, url?: string, tag?: string}>}
  */
 export function parseTextContent(text) {
     const parts = [];
     let lastIndex = 0;
-    // Combined regex for mentions and links
-    const regex = /(@\w+)|(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g;
+    // Combined regex for mentions, links, and hashtags
+    const regex = /(@\w+)|(https?:\/\/[^\s<]+[^<.,:;"')\]\s])|(#[\p{L}\p{N}_]+)/gu;
     let match;
 
     while ((match = regex.exec(text)) !== null) {
@@ -220,18 +228,24 @@ export function parseTextContent(text) {
             });
         }
 
-        // Determine if it's a mention or link
+        // Determine if it's a mention, link, or hashtag
         if (match[1]) { // Mention
             parts.push({
                 type: 'mention',
                 username: match[1].slice(1), // Remove @ symbol
                 content: match[1]
             });
-        } else { // Link
+        } else if (match[2]) { // Link
             parts.push({
                 type: 'link',
                 url: match[2],
                 content: match[2]
+            });
+        } else { // Hashtag
+            parts.push({
+                type: 'hashtag',
+                tag: match[3].slice(1), // Remove # symbol
+                content: match[3]
             });
         }
 

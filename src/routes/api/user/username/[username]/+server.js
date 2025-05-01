@@ -43,7 +43,10 @@ export const GET = async ({ params, locals }) => {
             likes: user.likes,
         })
     } catch (err) {
-        console.error(err)
-        throw error(500, "Failed to check username")
+        // Don't log 404 errors
+        if (err.status !== 404) {
+            console.error(err)
+        }
+        throw err
     }
 }
