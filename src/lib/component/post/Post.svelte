@@ -11,7 +11,7 @@
     import { Button } from "$lib/component/ui/button";
     import * as HoverCard from "$lib/component/ui/hover-card/index.js";
     import ProfileCard from "$lib/component/profile/ProfileCard.svelte";
-    import { getUserByUsername } from "$lib/util";
+    import ParsedText from "$lib/component/common/ParsedText.svelte";
 
     export let post;
     export let author;
@@ -21,7 +21,6 @@
     let showCounter = false;
     let counterTimeout;
     let isSwiping = false;
-    let mentionedUsers = new Map();
 
     function isVideo(url) {
         const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
@@ -49,64 +48,6 @@
         if (isSwiping) {
             e.preventDefault();
         }
-    }
-
-    function parseMentions(text) {
-        const parts = [];
-        let lastIndex = 0;
-        // Combined regex for mentions and links
-        const regex = /(@\w+)|(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g;
-        let match;
-
-        while ((match = regex.exec(text)) !== null) {
-            // Add text before the match
-            if (match.index > lastIndex) {
-                parts.push({
-                    type: 'text',
-                    content: text.slice(lastIndex, match.index)
-                });
-            }
-
-            // Determine if it's a mention or link
-            if (match[1]) { // Mention
-                parts.push({
-                    type: 'mention',
-                    username: match[1].slice(1), // Remove @ symbol
-                    content: match[1]
-                });
-            } else { // Link
-                parts.push({
-                    type: 'link',
-                    url: match[2],
-                    content: match[2]
-                });
-            }
-
-            lastIndex = match.index + match[0].length;
-        }
-
-        // Add remaining text after last match
-        if (lastIndex < text.length) {
-            parts.push({
-                type: 'text',
-                content: text.slice(lastIndex)
-            });
-        }
-
-        return parts;
-    }
-
-    async function fetchUserData(username) {
-        if (!mentionedUsers.has(username)) {
-            try {
-                const userData = await getUserByUsername(username);
-                mentionedUsers.set(username, userData);
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-                mentionedUsers.set(username, null);
-            }
-        }
-        return mentionedUsers.get(username);
     }
 
     onMount(() => {
@@ -195,7 +136,9 @@
                         </div>
                     </div>
                     {#if post.content.text}
-                        <p class="whitespace-pre-wrap text-sm break-words">{#each parseMentions(post.content.text) as part}{#if part.type === 'mention'}{#await fetchUserData(part.username)}<span class="text-primary">{part.content}</span>{:then userData}{#if userData}<HoverCard.Root><HoverCard.Trigger href={`/@${part.username}`} data-sveltekit-preload-data="off" class="text-primary hover:text-primary/80 transition-colors">{part.content}</HoverCard.Trigger><HoverCard.Content class="w-80"><ProfileCard user={userData} {viewer} /></HoverCard.Content></HoverCard.Root>{:else}<span class="text-muted-foreground">{part.content}</span>{/if}{:catch}<span class="text-muted-foreground">{part.content}</span>{/await}{:else if part.type === 'link'}<a href={part.url} target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 transition-colors">{part.content}</a>{:else}{part.content}{/if}{/each}</p>
+                        <p class="text-sm">
+                            <ParsedText text={post.content.text} {viewer} />
+                        </p>
                     {/if}
                 </div>
             </div>

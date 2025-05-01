@@ -11,7 +11,7 @@
     import ProfileStats from "$lib/component/profile/ProfileStats.svelte"
     import PostGrid from "$lib/component/post/PostGrid.svelte"
     import { LogIn } from "lucide-svelte"
-
+    import ParsedText from "$lib/component/common/ParsedText.svelte"
     $: user = $page.data.displayedUser
     $: viewer = $page.data.user
     $: profileTitle = `${user.name ?? user.username} • Yapster`
@@ -103,7 +103,9 @@
         </div>
     
         <div class="mt-2">
-            <p class="text-sm whitespace-pre-wrap">{user.bio ?? "No bio yet."}</p>
+            <p class="text-sm whitespace-pre-wrap">
+                <ParsedText text={user.bio ?? "No bio yet."} {viewer} />
+            </p>
         </div>
     
         <div class="mt-4">

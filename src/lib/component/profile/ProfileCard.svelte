@@ -6,7 +6,7 @@
     import MessageActions from "$lib/component/profile/MessageActions.svelte"
     import ProfileStats from "$lib/component/profile/ProfileStats.svelte"
     import { Circle } from "lucide-svelte"
-
+    import ParsedText from "$lib/component/common/ParsedText.svelte"
     export let user;
     export let viewer;
 </script>
@@ -55,7 +55,9 @@
             {/if}
         </div>
 
-        <p class="text-sm whitespace-pre-wrap line-clamp-1 mt-1">{user.bio ?? "No bio yet."}</p>
+        <p class="text-sm whitespace-pre-wrap line-clamp-1 mt-1">
+            <ParsedText text={user.bio ?? "No bio yet."} {viewer} />
+        </p>
 
         <div class="flex flex-col mt-auto pt-3">
             <div>

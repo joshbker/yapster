@@ -198,3 +198,53 @@ export const validateBio = (bio) => {
     }
     return bio
 }
+
+/**
+ * Parses text content to identify mentions and links
+ * @param {string} text - The text to parse
+ * @returns {Array<{type: 'text' | 'mention' | 'link', content: string, username?: string, url?: string}>}
+ */
+export function parseTextContent(text) {
+    const parts = [];
+    let lastIndex = 0;
+    // Combined regex for mentions and links
+    const regex = /(@\w+)|(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+        // Add text before the match
+        if (match.index > lastIndex) {
+            parts.push({
+                type: 'text',
+                content: text.slice(lastIndex, match.index)
+            });
+        }
+
+        // Determine if it's a mention or link
+        if (match[1]) { // Mention
+            parts.push({
+                type: 'mention',
+                username: match[1].slice(1), // Remove @ symbol
+                content: match[1]
+            });
+        } else { // Link
+            parts.push({
+                type: 'link',
+                url: match[2],
+                content: match[2]
+            });
+        }
+
+        lastIndex = match.index + match[0].length;
+    }
+
+    // Add remaining text after last match
+    if (lastIndex < text.length) {
+        parts.push({
+            type: 'text',
+            content: text.slice(lastIndex)
+        });
+    }
+
+    return parts;
+}
