@@ -16,12 +16,6 @@
         return url.match(/\.(mp4|webm|ogg)($|\?)/i) !== null;
     }
 
-    // Function to get video thumbnail URL
-    function getVideoThumbnailUrl(videoUrl) {
-        // Replace video extension with jpg
-        return videoUrl.replace(/\.(mp4|webm|ogg)($|\?)/i, '.jpg');
-    }
-
     async function loadPosts() {
         loading = true;
         error = null;
