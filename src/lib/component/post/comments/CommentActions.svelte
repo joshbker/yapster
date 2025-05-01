@@ -2,12 +2,9 @@
     import { Heart, MoreHorizontal, Flag, Ban, BellOff, Pencil, Trash } from "lucide-svelte";
     import { toast } from "svelte-sonner";
     import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "$lib/component/ui/dropdown-menu"
-    import { goto } from "$app/navigation";
     import { writable } from 'svelte/store';
-    import * as Drawer from "$lib/component/ui/drawer";
+    import LikesDrawer from "$lib/component/post/LikesDrawer.svelte";
     import { getUserById } from "$lib/util";
-    import ProfileCardSlim from "$lib/component/profile/ProfileCardSlim.svelte";
-    import { Loader2 } from "lucide-svelte";
 
     export let comment;
     export let viewer;
@@ -131,48 +128,13 @@
         >
             <Heart class="h-3.5 w-3.5" fill={$likeState ? "currentColor" : "none"} />
         </button>
-        <Drawer.Root bind:open={drawerOpen}>
-            <Drawer.Trigger>
-                <button 
-                    class="text-xs hover:underline px-1 {$likeState ? 'text-red-500 hover:text-red-600' : ''}"
-                >
-                    {$likeCount}
-                </button>
-            </Drawer.Trigger>
-            <Drawer.Portal>
-                <Drawer.Content>
-                    <div class="mx-auto w-full max-w-sm">
-                        <Drawer.Header>
-                            <Drawer.Title class="text-base font-semibold text-center">Likes</Drawer.Title>
-                        </Drawer.Header>
-                        <div class="px-4 h-[70vh] overflow-y-auto">
-                            {#if $isLoadingLikes}
-                                <div class="py-4 flex justify-center">
-                                    <Loader2 class="h-6 w-6 animate-spin" />
-                                </div>
-                            {:else if $likeUsers.length > 0}
-                                <div class="space-y-2 pb-4">
-                                    {#each $likeUsers as user}
-                                        <button 
-                                            class="w-full"
-                                            on:click={() => {
-                                                drawerOpen = false;
-                                                goto(`/@${user.username}`);
-                                            }}
-                                        >
-                                            <ProfileCardSlim {user} viewer={viewer} />
-                                        </button>
-                                    {/each}
-                                </div>
-                            {:else}
-                                <p class="text-center text-muted-foreground text-sm">No likes yet</p>
-                            {/if}
-                        </div>
-                        <Drawer.Footer class="mb-12"></Drawer.Footer>
-                    </div>
-                </Drawer.Content>
-            </Drawer.Portal>
-        </Drawer.Root>
+        <LikesDrawer 
+            bind:open={drawerOpen}
+            likes={comment.likes}
+            {viewer}
+            likeState={$likeState}
+            size="xs"
+        />
     </div>
     <DropdownMenu>
         <DropdownMenuTrigger>

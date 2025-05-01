@@ -71,7 +71,7 @@
     });
 </script>
 
-<div class="rounded-lg p-4 relative overflow-hidden">
+<div class="rounded-lg {post.content.items?.length ? 'p-4 mb-4' : 'p-4'} relative overflow-hidden">
     {#if post.content.items?.length}
         {#if isVideo(post.content.items[currentPageIndex])}
             <video 
@@ -189,7 +189,7 @@
             </div>
         {/if}
 
-        <PostActions {post} {viewer} />
+        <PostActions {post} {author} {viewer} />
 
         <div class="flex items-center justify-between gap-2 w-full">
             <div class="flex items-center gap-1.5">

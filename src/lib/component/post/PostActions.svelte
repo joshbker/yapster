@@ -6,12 +6,10 @@
     import { goto } from "$app/navigation";
     import { page } from "$app/stores";
     import { writable } from 'svelte/store';
-    import * as Drawer from "$lib/component/ui/drawer";
-    import { getUserById } from "$lib/util";
-    import ProfileCardSlim from "$lib/component/profile/ProfileCardSlim.svelte";
-    import { Loader2 } from "lucide-svelte";
+    import LikesDrawer from "./LikesDrawer.svelte";
 
     export let post;
+    export let author;
     export let viewer;
 
     const likeState = writable(false);
@@ -20,33 +18,9 @@
     let likeDebounceTimeout;
     let drawerOpen = false;
 
-    // Store for users who liked
-    const likeUsers = writable([]);
-    const isLoadingLikes = writable(false);
-
     // Make isLiked and likeCount fully reactive using the stores
     $: $likeState = post.likes?.includes(viewer?.id) ?? false;
     $: $likeCount = post.likes?.length ?? 0;
-
-    // Load users who liked when drawer opens
-    $: if (drawerOpen && post.likes && (!$likeUsers.length || $likeUsers.length !== post.likes.length)) {
-        loadLikeUsers();
-    }
-
-    async function loadLikeUsers() {
-        if ($isLoadingLikes) return;
-        
-        $isLoadingLikes = true;
-        try {
-            const users = await Promise.all(post.likes.map(id => getUserById(id)));
-            $likeUsers = users.filter(Boolean);
-        } catch (err) {
-            console.error('Failed to load users who liked:', err);
-            toast.error("Failed to load users");
-        } finally {
-            $isLoadingLikes = false;
-        }
-    }
 
     // Debounced like function
     function debouncedLike() {
@@ -140,48 +114,12 @@
             >
                 <Heart class="h-4 w-4" fill={$likeState ? "currentColor" : "none"} />
             </button>
-            <Drawer.Root bind:open={drawerOpen}>
-                <Drawer.Trigger>
-                    <button 
-                        class="text-sm hover:underline px-1 {$likeState ? 'text-red-500 hover:text-red-600' : ''}"
-                    >
-                        {$likeCount}
-                    </button>
-                </Drawer.Trigger>
-                <Drawer.Portal>
-                    <Drawer.Content>
-                        <div class="mx-auto w-full max-w-sm">
-                            <Drawer.Header>
-                                <Drawer.Title class="text-base font-semibold text-center">Likes</Drawer.Title>
-                            </Drawer.Header>
-                            <div class="px-4 h-[70vh] overflow-y-auto">
-                                {#if $isLoadingLikes}
-                                    <div class="py-4 flex justify-center">
-                                        <Loader2 class="h-6 w-6 animate-spin" />
-                                    </div>
-                                {:else if $likeUsers.length > 0}
-                                    <div class="space-y-2 pb-4">
-                                        {#each $likeUsers as user}
-                                            <button 
-                                                class="w-full"
-                                                on:click={() => {
-                                                    drawerOpen = false;
-                                                    goto(`/@${user.username}`);
-                                                }}
-                                            >
-                                                <ProfileCardSlim {user} viewer={viewer} />
-                                            </button>
-                                        {/each}
-                                    </div>
-                                {:else}
-                                    <p class="text-center text-muted-foreground text-sm">No likes yet</p>
-                                {/if}
-                            </div>
-                            <Drawer.Footer class="mb-12"></Drawer.Footer>
-                        </div>
-                    </Drawer.Content>
-                </Drawer.Portal>
-            </Drawer.Root>
+            <LikesDrawer 
+                bind:open={drawerOpen}
+                likes={post.likes}
+                {viewer}
+                likeState={$likeState}
+            />
         </div>
         <a 
             class="flex items-center gap-2 hover:text-blue-400 transition-colors"
@@ -212,9 +150,18 @@
                         <p>Open Full Post</p>
                     </DropdownMenuItem>
                 {/if}
-                {#if viewer.id !== post.author.id}
+                {#if viewer.id === author.id}
+                    <DropdownMenuItem class="gap-2" on:click={handleEditPost}>
+                        <Pencil class="h-4 w-4" />
+                        <p>Edit Post</p>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem class="gap-2 !text-destructive" on:click={handleDeletePost}>
+                        <Trash class="h-4 w-4" />
+                        <p>Delete Post</p>
+                    </DropdownMenuItem>
+                {:else}
                     <DropdownMenuItem class="gap-2 !text-destructive" on:click={handleReportPost}>
-                    <Flag class="h-4 w-4" />
+                        <Flag class="h-4 w-4" />
                         <p>Report Post</p>
                     </DropdownMenuItem>
                     <DropdownMenuItem class="gap-2 !text-destructive" on:click={handleBlockUser}>
@@ -224,15 +171,6 @@
                     <DropdownMenuItem class="gap-2" on:click={handleIgnoreUser}>
                         <BellOff class="h-4 w-4" />
                         <p>Ignore User</p>
-                    </DropdownMenuItem>
-                {:else}
-                    <DropdownMenuItem class="gap-2" on:click={handleEditPost}>
-                        <Pencil class="h-4 w-4" />
-                        <p>Edit Post</p>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem class="gap-2 !text-destructive" on:click={handleDeletePost}>
-                        <Trash class="h-4 w-4" />
-                        <p>Delete Post</p>
                     </DropdownMenuItem>
                 {/if}
             </DropdownMenuContent>
