@@ -7,7 +7,7 @@
     import { fade } from 'svelte/transition';
     import MediaItem from '$lib/component/post/MediaItem.svelte';
     import PostActions from '$lib/component/post/PostActions.svelte';
-    import { Circle, MapPin, Hash } from "lucide-svelte";
+    import { MapPin, Hash } from "lucide-svelte";
     import { Button } from "$lib/component/ui/button";
     import * as HoverCard from "$lib/component/ui/hover-card/index.js";
     import ProfileCard from "$lib/component/profile/ProfileCard.svelte";

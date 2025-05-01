@@ -183,13 +183,13 @@
                 </Drawer.Portal>
             </Drawer.Root>
         </div>
-        <button 
+        <a 
             class="flex items-center gap-2 hover:text-blue-400 transition-colors"
-            on:click={handleComment}
+            href={`/p/${post.id}`}
         >
             <MessageCircle class="h-4 w-4" />
             <span class="text-sm">{post.comments?.length ?? 0}</span>
-        </button>
+        </a>
         <button class="hover:text-green-400 transition-colors" on:click={handleShare}>
             <Forward class="h-4 w-4" />
         </button>

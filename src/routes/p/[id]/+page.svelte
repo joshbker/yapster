@@ -4,6 +4,7 @@
     import { Loader2 } from "lucide-svelte";
     import Post from "$lib/component/post/Post.svelte";
     import HeaderNavigation from "$lib/component/HeaderNavigation.svelte";
+    import PostComments from "$lib/component/post/comments/PostComments.svelte";
     export let data;
 
     let post = null;
@@ -52,5 +53,6 @@
         </div>
     {:else}
         <Post {post} {author} viewer={data.user} />
+        <PostComments {post} {author} viewer={data.user} />
     {/if}
 </div>

@@ -37,6 +37,7 @@
 			following: [],
 			posts: [],
 			likes: [],
+			likedComments: [],
 			saves: [],
 			comments: [],
 

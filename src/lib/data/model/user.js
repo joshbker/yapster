@@ -44,6 +44,10 @@ const userSchema = new Schema({
         type: [String],
         default: []
     },
+    likedComments: {
+        type: [String],
+        default: []
+    },
     saves: {
         type: [String],
         default: []
