@@ -59,27 +59,31 @@
 </div>
 <div class="container max-w-4xl px-0 py-2 mt-6 lg:mt-0">
     <div class="flex flex-col mx-4 lg:mx-0">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-                <div class="flex items-center gap-1.5">
-                    <h1 class="text-lg font-bold">{user.name ?? user.username}</h1>
-                    {#if user.verified}
-                        <BadgeVerified />
-                    {/if}
-                </div>
-                <div class="flex items-center gap-1.5">
-                    {#if user.name}
-                        <p class="text-sm font-medium text-muted-foreground">{user.username}</p>
-                    {/if}
-                    {#if user.pronouns}
-                        <Circle class="h-1.5 w-1.5 fill-muted-foreground text-muted-foreground -mb-0.5" />
-                        <p class="text-sm font-medium text-muted-foreground">{user.pronouns}</p>
-                    {/if}
+        <div class="flex items-start justify-between">
+            <div class="container-type-inline-size min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                    <div class="flex items-center gap-1.5 min-w-0">
+                        <h1 class="text-lg font-bold truncate flex-shrink max-w-[220px] lg:max-w-none">{user.name ?? user.username}</h1>
+                        {#if user.verified}
+                            <BadgeVerified class="flex-shrink-0" />
+                        {/if}
+                    </div>
+                    <div class="flex items-center gap-1.5 max-w-[90dvw]">
+                        {#if user.name}
+                            <p class="text-sm font-medium text-muted-foreground flex-shrink max-w-[200px] lg:max-w-none truncate">{user.username}</p>
+                        {/if}
+                        {#if user.pronouns}
+                            <div class="flex items-center gap-1.5 flex-shrink-0">
+                                <Circle class="h-1.5 w-1.5 fill-muted-foreground text-muted-foreground -mb-0.5" />
+                                <p class="text-sm font-medium text-muted-foreground flex-shrink max-w-[200px] lg:max-w-none truncate">{user.pronouns}</p>
+                            </div>
+                        {/if}
+                    </div>
                 </div>
             </div>
     
             {#if viewer}
-                <div class="flex gap-2">
+                <div class="flex gap-2 flex-shrink-0 ml-4">
                     {#if user.username === viewer.username}
                         <Button variant="outline" class="px-2 h-8 flex items-center gap-1.5" href="/account/profile">
                             <Pencil class="h-4 w-4" />
