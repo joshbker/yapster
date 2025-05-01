@@ -1,4 +1,5 @@
-import { Schema, model } from "mongoose"
+import pkg from "mongoose"
+const { Schema, model, models } = pkg;
 
 const postSchema = new Schema({
     author: {
@@ -44,4 +45,4 @@ const postSchema = new Schema({
     _id: true
 })
 
-export const post = model("post", postSchema, "post"); 
+export const post = models.post || model("post", postSchema, "post"); 

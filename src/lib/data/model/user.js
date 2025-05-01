@@ -1,4 +1,5 @@
-import { Schema, model } from "mongoose"
+import pkg from "mongoose"
+const { Schema, model, models } = pkg;
 
 const userSchema = new Schema({
     name: {
@@ -55,4 +56,4 @@ const userSchema = new Schema({
     versionKey: false
 })
 
-export const user = model("user", userSchema, "user"); 
+export const user = models.user || model("user", userSchema, "user"); 
