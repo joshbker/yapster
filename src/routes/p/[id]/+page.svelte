@@ -37,7 +37,7 @@
     });
 </script>
 
-<HeaderNavigation />
+<HeaderNavigation name={`Post`} />
 <div class="container max-w-xl mx-auto p-4">
     {#if loading}
         <div class="flex justify-center py-8">
