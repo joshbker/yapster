@@ -57,7 +57,7 @@ export const PATCH = async ({ locals, request }) => {
         const updatedUser = await User.findByIdAndUpdate(
             locals.user.id,
             { $set: sanitizedUpdates },
-            { new: true, runValidators: true }
+            { new: true }
         ).lean()
 
         if (!updatedUser) {
