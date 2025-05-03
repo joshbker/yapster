@@ -13,7 +13,6 @@
     const likeState = writable(false);
     const likeCount = writable(0);
     let isLiking = false;
-    let likeDebounceTimeout;
     let drawerOpen = false;
 
     // Store for users who liked
@@ -64,15 +63,6 @@
         } finally {
             $isLoadingLikes = false;
         }
-    }
-
-    // Debounced like function
-    function debouncedLike() {
-        if (likeDebounceTimeout) {
-            clearTimeout(likeDebounceTimeout);
-        }
-
-        likeDebounceTimeout = setTimeout(handleLike, 300);
     }
 
     async function handleLike() {
@@ -149,7 +139,7 @@
     <div class="flex items-center">
         <button 
             class="transition-colors p-1 {$likeState ? 'text-red-500 hover:text-red-600' : 'hover:text-red-500'}" 
-            on:click={debouncedLike}
+            on:click={handleLike}
             disabled={isLiking}
         >
             <Heart class="h-3.5 w-3.5" fill={$likeState ? "currentColor" : "none"} />
@@ -161,6 +151,7 @@
             likeState={$likeState}
             size="xs"
             id={comment.id}
+            likeCount={$likeCount}
         />
     </div>
     <DropdownMenu>

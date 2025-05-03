@@ -16,7 +16,6 @@
     const likeState = writable(false);
     const likeCount = writable(0);
     let isLikeLoading = false;
-    let likeDebounceTimeout;
     let drawerOpen = false;
 
     // Initialize the stores once
@@ -25,15 +24,6 @@
             $likeState = post.likes.includes(viewer?.id) ?? false;
             $likeCount = post.likes.length;
         }
-    }
-
-    // Debounced like function
-    function debouncedLike() {
-        if (likeDebounceTimeout) {
-            clearTimeout(likeDebounceTimeout);
-        }
-
-        likeDebounceTimeout = setTimeout(like, 300);
     }
 
     async function like() {
@@ -117,7 +107,7 @@
         <div class="flex items-center">
             <button 
                 class="transition-colors p-2 {$likeState ? 'text-red-500 hover:text-red-600' : 'hover:text-red-500'}" 
-                on:click={debouncedLike}
+                on:click={like}
                 disabled={isLikeLoading}
             >
                 <Heart class="h-4 w-4" fill={$likeState ? "currentColor" : "none"} />
@@ -128,6 +118,7 @@
                 {viewer}
                 likeState={$likeState}
                 id={post.id}
+                likeCount={$likeCount}
             />
         </div>
         <a 

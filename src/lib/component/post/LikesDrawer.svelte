@@ -14,6 +14,7 @@
     export let likeState = false;
     export let size = "sm";
     export let id; // Add this prop to identify which post/comment this drawer belongs to
+    export let likeCount = likes?.length ?? 0;  // Add this prop with a default value
 
     // Store for users who liked
     const likeUsers = writable([]);
@@ -85,7 +86,7 @@
         <button 
             class="text-{size} hover:underline px-1 {likeState ? 'text-red-500 hover:text-red-600' : ''}"
         >
-            {likes?.length ?? 0}
+            {likeCount}
         </button>
     </Drawer.Trigger>
     <Drawer.Portal>
