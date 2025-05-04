@@ -13,6 +13,8 @@
 
     let isLoading = false;
     let error = '';
+    let isDragging = false;
+    let dragCounter = 0; // Track nested drag events
 
     // Form data
     let text = '';
@@ -52,7 +54,10 @@
 
     async function handleFileSelect(event) {
         const files = Array.from(event.target.files || []);
-        
+        await processFiles(files);
+    }
+
+    async function processFiles(files) {
         if (mediaFiles.length + files.length > MAX_POST_IMAGES) {
             toast.error(`You can only upload up to ${MAX_POST_IMAGES} images`);
             return;
@@ -86,6 +91,50 @@
         URL.revokeObjectURL(previewUrls[index]);
         mediaFiles = mediaFiles.filter((_, i) => i !== index);
         previewUrls = previewUrls.filter((_, i) => i !== index);
+    }
+
+    // Handle drag and drop
+    function handleDragEnter(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        dragCounter++;
+        isDragging = true;
+    }
+
+    function handleDragLeave(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        dragCounter--;
+        if (dragCounter === 0) {
+            isDragging = false;
+        }
+    }
+
+    function handleDragOver(event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    async function handleDrop(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        isDragging = false;
+        dragCounter = 0;
+
+        const files = Array.from(event.dataTransfer.files);
+        await processFiles(files);
+    }
+
+    // Handle clipboard paste
+    async function handlePaste(event) {
+        const items = Array.from(event.clipboardData.items);
+        const imageFiles = items
+            .filter(item => item.type.startsWith('image/'))
+            .map(item => item.getAsFile());
+
+        if (imageFiles.length > 0) {
+            await processFiles(imageFiles);
+        }
     }
 
     async function handleSubmit() {
@@ -172,6 +221,16 @@
     <title>Create Post | Yapster</title>
 </svelte:head>
 
+{#if isDragging}
+    <div class="fixed inset-0 bg-primary/10 pointer-events-none z-50 flex items-center justify-center">
+        <div class="bg-card border-2 border-dashed border-primary rounded-lg p-8 text-center">
+            <ImageIcon class="w-12 h-12 text-primary mx-auto mb-4" />
+            <p class="text-lg font-medium">Drop your images here</p>
+            <p class="text-sm text-muted-foreground mt-2">Images will be added to your post</p>
+        </div>
+    </div>
+{/if}
+
 <div class="container max-w-2xl mx-auto px-4 py-8">
     <Card class="border-border bg-card">
         <CardHeader>
@@ -231,6 +290,9 @@
                     </div>
                     <p class="text-sm text-muted-foreground">
                         You can upload up to {MAX_POST_IMAGES} photos (max 512KB each)
+                    </p>
+                    <p class="text-sm text-muted-foreground">
+                        Tip: You can paste images or drag & drop them anywhere on the page
                     </p>
                 </div>
 
@@ -294,3 +356,11 @@
         </CardContent>
     </Card>
 </div>
+
+<svelte:window 
+    on:paste={handlePaste}
+    on:dragenter={handleDragEnter}
+    on:dragleave={handleDragLeave}
+    on:dragover={handleDragOver}
+    on:drop={handleDrop}
+/>
