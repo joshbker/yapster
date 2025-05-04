@@ -7,7 +7,9 @@
     import { page } from "$app/stores";
     import { writable } from 'svelte/store';
     import LikesDrawer from "./LikesDrawer.svelte";
+    import SavesDrawer from "./SavesDrawer.svelte";
     import { triggerLikeUpdate } from "$lib/data/likeStore";
+    import { triggerSaveUpdate } from "$lib/data/saveStore";
 
     export let post;
     export let author;
@@ -15,14 +17,22 @@
 
     const likeState = writable(false);
     const likeCount = writable(0);
+    const saveState = writable(false);
+    const saveCount = writable(0);
     let isLikeLoading = false;
-    let drawerOpen = false;
+    let isSaveLoading = false;
+    let likesDrawerOpen = false;
+    let savesDrawerOpen = false;
 
     // Initialize the stores once
     $: {
         if (post?.likes) {
             $likeState = post.likes.includes(viewer?.id) ?? false;
             $likeCount = post.likes.length;
+        }
+        if (post?.saves) {
+            $saveState = post.saves.includes(viewer?.id) ?? false;
+            $saveCount = post.saves.length;
         }
     }
 
@@ -72,8 +82,50 @@
         }
     }
 
-    async function handleComment() {
-        alert("Comment")
+    async function handleSave() {
+        if (isSaveLoading) return;
+
+        const wasSaved = $saveState;
+        const previousCount = $saveCount;
+        
+        // Optimistic updates
+        $saveState = !wasSaved;
+        $saveCount = wasSaved ? previousCount - 1 : previousCount + 1;
+        isSaveLoading = true;
+
+        try {
+            const response = await fetch(`/api/me/post/${post.id}/save`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                // Revert on failure
+                $saveState = wasSaved;
+                $saveCount = previousCount;
+                const data = await response.json();
+                throw new Error(data.message || 'Failed to save post');
+            }
+
+            // Update the arrays based on the action
+            if (wasSaved) {
+                // Unsave: Remove user ID from saves array
+                post.saves = post.saves.filter(id => id !== viewer.id);
+            } else {
+                // Save: Add user ID to saves array
+                post.saves = [...(post.saves || []), viewer.id];
+            }
+
+            // Trigger save update
+            triggerSaveUpdate(post.id);
+        } catch (err) {
+            console.error('Failed to save/unsave:', err);
+            toast.error(err.message);
+        } finally {
+            isSaveLoading = false;
+        }
     }
 
     async function handleShare() {
@@ -113,7 +165,7 @@
                 <Heart class="h-4 w-4" fill={$likeState ? "currentColor" : "none"} />
             </button>
             <LikesDrawer 
-                bind:open={drawerOpen}
+                bind:open={likesDrawerOpen}
                 likes={post.likes}
                 {viewer}
                 likeState={$likeState}
@@ -132,11 +184,35 @@
             <Forward class="h-4 w-4" />
         </button>
     </div>
-    <div class="flex items-center gap-3">
-        <button class="flex items-center gap-2 hover:text-yellow-400 transition-colors">
-            <Bookmark class="h-4 w-4" />
-            <span class="text-sm">{post.saves?.length ?? 0}</span>
-        </button>
+    <div class="flex items-center">
+        <div class="flex items-center">
+            {#if viewer.id !== author.id}
+                <button 
+                    class="flex items-center gap-2 transition-colors mr-2 {$saveState ? 'text-yellow-400 hover:text-yellow-500' : 'hover:text-yellow-400'}" 
+                    on:click={handleSave}
+                    disabled={isSaveLoading}
+                >
+                    <Bookmark class="h-4 w-4" fill={$saveState ? "currentColor" : "none"} />
+                    <span class="text-sm">{$saveCount}</span>
+                </button>
+            {:else}
+                <button 
+                    class="flex items-center gap-2 transition-colors {$saveState ? 'text-yellow-400 hover:text-yellow-500' : 'hover:text-yellow-400'}" 
+                    on:click={handleSave}
+                    disabled={isSaveLoading}
+                >
+                    <Bookmark class="h-4 w-4" fill={$saveState ? "currentColor" : "none"} />
+                </button>
+                <SavesDrawer 
+                    bind:open={savesDrawerOpen}
+                    saves={post.saves}
+                    {viewer}
+                    saveState={$saveState}
+                    id={post.id}
+                    saveCount={$saveCount}
+                />
+            {/if}
+        </div>
         <DropdownMenu>
             <DropdownMenuTrigger>
                 <button class="hover:bg-foreground/10 rounded-lg p-2 transition-colors">
