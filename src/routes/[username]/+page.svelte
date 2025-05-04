@@ -12,11 +12,17 @@
     import PostGrid from "$lib/component/post/PostGrid.svelte"
     import { LogIn } from "lucide-svelte"
     import ParsedText from "$lib/component/common/ParsedText.svelte"
+    import * as Tabs from "$lib/component/ui/tabs"
+
     $: user = $page.data.displayedUser
     $: viewer = $page.data.user
     $: profileTitle = `${user.name ?? user.username} • Yapster`
     $: profileDescription = user.bio ?? `Check out ${user.username}'s profile on Yapster`
     $: profileImage = (user.banner ?? user.image ?? PUBLIC_DEFAULT_AVATAR_URL)
+    $: isOwnProfile = viewer?.username === user.username
+    $: userPosts = user.posts ?? []
+    $: userLikes = user.likes ?? []
+    $: userSaves = user.saves ?? []
 </script>
 
 <svelte:head>
@@ -129,7 +135,32 @@
 
     {#if viewer}
         <div class="mt-6">
-            <PostGrid postIds={[...user.posts].reverse()} />
+            <Tabs.Root value="posts">
+                <Tabs.List class="w-full flex justify-center border-b">
+                    <Tabs.Trigger value="posts" class="flex-1">
+                        Posts
+                    </Tabs.Trigger>
+                    <Tabs.Trigger value="likes" class="flex-1">
+                        Likes
+                    </Tabs.Trigger>
+                    {#if isOwnProfile}
+                        <Tabs.Trigger value="saves" class="flex-1">
+                            Saves
+                        </Tabs.Trigger>
+                    {/if}
+                </Tabs.List>
+                <Tabs.Content value="posts">
+                    <PostGrid postIds={[...userPosts].reverse()} />
+                </Tabs.Content>
+                <Tabs.Content value="likes">
+                    <PostGrid postIds={[...userLikes].reverse()} />
+                </Tabs.Content>
+                {#if isOwnProfile}
+                    <Tabs.Content value="saves">
+                        <PostGrid postIds={[...userSaves].reverse()} />
+                    </Tabs.Content>
+                {/if}
+            </Tabs.Root>
         </div>
     {:else}
         <div class="mt-12 w-full flex flex-col items-center gap-4">

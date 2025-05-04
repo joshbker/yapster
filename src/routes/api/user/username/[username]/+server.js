@@ -41,6 +41,7 @@ export const GET = async ({ params, locals }) => {
             following: user.following,
             posts: user.posts,
             likes: user.likes,
+            saves: user.saves
         })
     } catch (err) {
         // Don't log 404 errors

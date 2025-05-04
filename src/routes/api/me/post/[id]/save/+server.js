@@ -30,8 +30,8 @@ export const PATCH = async ({ params, locals }) => {
             User.updateOne(
                 { _id: currentUser.id },
                 isSaved
-                    ? { $pull: { savedPosts: postToSave._id.toString() } }
-                    : { $addToSet: { savedPosts: postToSave._id.toString() } }
+                    ? { $pull: { saves: postToSave._id.toString() } }
+                    : { $addToSet: { saves: postToSave._id.toString() } }
             )
         ])
 
