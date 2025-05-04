@@ -6,9 +6,10 @@
     import { Label } from '$lib/component/ui/label';
     import { toast } from "svelte-sonner";
     import { goto } from '$app/navigation';
-    import { MapPin, Hash } from 'lucide-svelte';
-    // import { Image as ImageIcon } from 'lucide-svelte';
-    // import { acceptedTypes, MAX_FILE_SIZE, processImageFile } from '$lib/mediaUtil';
+    import { MapPin, Hash, X } from 'lucide-svelte';
+    import { Image as ImageIcon } from 'lucide-svelte';
+    import { acceptedTypes, processImageFile } from '$lib/mediaUtil';
+    import { POST_TEXT_MAX_LENGTH, MAX_POST_IMAGES, validateTextContent, validateTag } from '$lib/validationUtil';
 
     let isLoading = false;
     let error = '';
@@ -16,52 +17,81 @@
     // Form data
     let text = '';
     let location = '';
-    let tags = '';
-    // let mediaFiles = [];
-    // let previewUrls = [];
+    let currentTag = '';
+    let tags = [];
+    let mediaFiles = [];
+    let previewUrls = [];
 
-    // const MAX_FILES = 9; // Maximum number of media files
+    // Handle tag input
+    function handleTagInput(event) {
+        // Handle space or enter key
+        if (event.key === ' ' || event.key === 'Enter') {
+            event.preventDefault();
+            addTag();
+        }
+    }
 
-    // async function handleFileSelect(event) {
-    //     const files = Array.from(event.target.files || []);
+    function addTag() {
+        const tagToAdd = currentTag.trim();
+        if (tagToAdd) {
+            try {
+                const validatedTag = validateTag(tagToAdd);
+                if (validatedTag && !tags.includes(validatedTag)) {
+                    tags = [...tags, validatedTag];
+                }
+            } catch (err) {
+                toast.error(err.message);
+            }
+        }
+        currentTag = '';
+    }
+
+    function removeTag(index) {
+        tags = tags.filter((_, i) => i !== index);
+    }
+
+    async function handleFileSelect(event) {
+        const files = Array.from(event.target.files || []);
         
-    //     if (mediaFiles.length + files.length > MAX_FILES) {
-    //         toast.error(`You can only upload up to ${MAX_FILES} files`);
-    //         return;
-    //     }
+        if (mediaFiles.length + files.length > MAX_POST_IMAGES) {
+            toast.error(`You can only upload up to ${MAX_POST_IMAGES} images`);
+            return;
+        }
 
-    //     for (const file of files) {
-    //         try {
-    //             let processedFile = file;
-    //             if (file.type.startsWith('image/')) {
-    //                 processedFile = await processImageFile(file);
-    //             } else if (!acceptedTypes.includes(file.type)) {
-    //                 toast.error('Unsupported file type');
-    //                 continue;
-    //             } else if (file.size > MAX_FILE_SIZE) {
-    //                 toast.error('File too large (max 512KB)');
-    //                 continue;
-    //             }
+        for (const file of files) {
+            try {
+                // Only accept image files
+                if (!file.type.startsWith('image/')) {
+                    toast.error('Only images are supported at this time');
+                    continue;
+                }
+                
+                if (!acceptedTypes.includes(file.type)) {
+                    toast.error('Unsupported file type');
+                    continue;
+                }
 
-    //             mediaFiles = [...mediaFiles, processedFile];
-    //             const url = URL.createObjectURL(processedFile);
-    //             previewUrls = [...previewUrls, url];
-    //         } catch (err) {
-    //             console.error('Error processing file:', err);
-    //             toast.error(err.message || 'Error processing file');
-    //         }
-    //     }
-    // }
+                const processedFile = await processImageFile(file);
+                mediaFiles = [...mediaFiles, processedFile];
+                const url = URL.createObjectURL(processedFile);
+                previewUrls = [...previewUrls, url];
+            } catch (err) {
+                console.error('Error processing file:', err);
+                toast.error(err.message || 'Error processing file');
+            }
+        }
+    }
 
-    // function removeMedia(index) {
-    //     URL.revokeObjectURL(previewUrls[index]);
-    //     mediaFiles = mediaFiles.filter((_, i) => i !== index);
-    //     previewUrls = previewUrls.filter((_, i) => i !== index);
-    // }
+    function removeMedia(index) {
+        URL.revokeObjectURL(previewUrls[index]);
+        mediaFiles = mediaFiles.filter((_, i) => i !== index);
+        previewUrls = previewUrls.filter((_, i) => i !== index);
+    }
 
     async function handleSubmit() {
-        if (!text.trim()) {
-            toast.error('Please add some content to your post');
+        // Validate that there's either text or images
+        if (!text.trim() && mediaFiles.length === 0) {
+            toast.error('Please add some text or images to your post');
             return;
         }
 
@@ -69,7 +99,39 @@
         error = '';
 
         try {
-            // Create the post
+            // Validate text content if present
+            let validatedText = '';
+            if (text.trim()) {
+                try {
+                    validatedText = validateTextContent(text.trim());
+                } catch (err) {
+                    toast.error(err.message);
+                    isLoading = false;
+                    return;
+                }
+            }
+
+            // Upload images first if there are any
+            const uploadedUrls = [];
+            
+            for (const file of mediaFiles) {
+                const formData = new FormData();
+                formData.append('image', file);
+                
+                const response = await fetch('/api/image?post=true', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to upload image');
+                }
+                
+                const result = await response.json();
+                uploadedUrls.push(result.url);
+            }
+
+            // Create the post with uploaded images
             const response = await fetch('/api/me/post', {
                 method: 'POST',
                 headers: {
@@ -77,10 +139,10 @@
                 },
                 body: JSON.stringify({
                     content: {
-                        text: text.trim(),
+                        text: validatedText,
                         location: location.trim(),
-                        tags: tags.trim().split(/[,\s]+/).filter(Boolean),
-                        items: [] // Empty array for now since media is not supported
+                        tags,
+                        items: uploadedUrls
                     }
                 })
             });
@@ -90,6 +152,10 @@
             }
 
             const result = await response.json();
+            
+            // Clean up preview URLs
+            previewUrls.forEach(url => URL.revokeObjectURL(url));
+            
             toast.success('Post created successfully');
             goto('/'); // Redirect to home page
         } catch (err) {
@@ -122,28 +188,24 @@
                         bind:value={text}
                         placeholder="Share your thoughts..."
                         class="min-h-[120px]"
+                        maxlength={POST_TEXT_MAX_LENGTH}
                     />
+                    <p class="text-sm text-muted-foreground text-right">
+                        {text.length}/{POST_TEXT_MAX_LENGTH}
+                    </p>
                 </div>
 
-                <!-- Media Upload - Commented out for now -->
-                <!-- <div class="space-y-2">
-                    <Label for="media">Add Photos or Videos</Label>
+                <!-- Media Upload -->
+                <div class="space-y-2">
+                    <Label for="media">Add Photos</Label>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         {#each previewUrls as url, index}
                             <div class="relative aspect-square">
-                                {#if url.startsWith('blob:') && url.includes('video')}
-                                    <video 
-                                        src={url} 
-                                        class="w-full h-full object-cover rounded-lg"
-                                        controls
-                                    />
-                                {:else}
-                                    <img 
-                                        src={url} 
-                                        alt="Preview" 
-                                        class="w-full h-full object-cover rounded-lg"
-                                    />
-                                {/if}
+                                <img 
+                                    src={url} 
+                                    alt="Preview" 
+                                    class="w-full h-full object-cover rounded-lg"
+                                />
                                 <button
                                     type="button"
                                     class="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center"
@@ -153,13 +215,13 @@
                                 </button>
                             </div>
                         {/each}
-                        {#if previewUrls.length < MAX_FILES}
+                        {#if previewUrls.length < MAX_POST_IMAGES}
                             <label class="border-2 border-dashed border-muted-foreground rounded-lg aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
                                 <ImageIcon class="w-8 h-8 text-muted-foreground" />
-                                <span class="text-sm text-muted-foreground mt-2">Add Media</span>
+                                <span class="text-sm text-muted-foreground mt-2">Add Photos</span>
                                 <input
                                     type="file"
-                                    accept={acceptedTypes.join(',')}
+                                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                                     on:change={handleFileSelect}
                                     class="hidden"
                                     multiple
@@ -168,9 +230,9 @@
                         {/if}
                     </div>
                     <p class="text-sm text-muted-foreground">
-                        You can upload up to {MAX_FILES} photos or videos (max 512KB each)
+                        You can upload up to {MAX_POST_IMAGES} photos (max 512KB each)
                     </p>
-                </div> -->
+                </div>
 
                 <!-- Location -->
                 <div class="space-y-2">
@@ -189,13 +251,30 @@
                 <!-- Tags -->
                 <div class="space-y-2">
                     <Label for="tags">Tags (optional)</Label>
+                    {#if tags.length}
+                        <div class="flex flex-wrap gap-1.5">
+                            {#each tags as tag, index}
+                                <Button 
+                                    variant="secondary" 
+                                    size="xs" 
+                                    class="text-foreground bg-foreground/10 px-2 py-1 flex items-center gap-1"
+                                    on:click={() => removeTag(index)}
+                                >
+                                    <p class="text-xs">{tag}</p>
+                                    <X class="h-3 w-3" />
+                                </Button>
+                            {/each}
+                        </div>
+                    {/if}
                     <div class="relative">
                         <Hash class="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
                             id="tags"
-                            bind:value={tags}
-                            placeholder="Add tags (separated by spaces or commas)"
+                            bind:value={currentTag}
+                            placeholder="Add tags (press space or enter)"
                             class="pl-10"
+                            on:keydown={handleTagInput}
+                            on:blur={addTag}
                         />
                     </div>
                 </div>

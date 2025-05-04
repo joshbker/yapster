@@ -1,6 +1,7 @@
 import { json, error } from "@sveltejs/kit"
 import { post as Post } from "$lib/data/model/post.js"
 import { user as User } from "$lib/data/model/user.js"
+import { validatePost } from "$lib/validationUtil"
 
 export const POST = async ({ request, locals }) => {
     // Check authentication
@@ -11,21 +12,19 @@ export const POST = async ({ request, locals }) => {
     try {
         const data = await request.json()
         
-        // Validate required fields
+        // Validate content
         if (!data.content) {
             throw error(400, "Content is required")
         }
+
+        // Validate and sanitize the post content
+        const validatedContent = validatePost(data.content)
 
         // Create new post
         const newPost = await Post.create({
             author: locals.user.id,
             timestamp: new Date(),
-            content: {
-                items: data.content.items || [],
-                text: data.content.text || "",
-                location: data.content.location || "",
-                tags: data.content.tags || []
-            }
+            content: validatedContent
         })
 
         console.log("NEW POST", newPost)
@@ -50,6 +49,9 @@ export const POST = async ({ request, locals }) => {
         })
     } catch (err) {
         console.error(err)
+        if (err.status === 400 || err.status === 401) {
+            throw err
+        }
         throw error(500, "Failed to create post")
     }
 }
