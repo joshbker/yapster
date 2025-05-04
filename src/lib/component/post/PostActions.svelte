@@ -10,6 +10,7 @@
     import SavesDrawer from "./SavesDrawer.svelte";
     import { triggerLikeUpdate } from "$lib/data/likeStore";
     import { triggerSaveUpdate } from "$lib/data/saveStore";
+    import { triggerPostDelete } from "$lib/data/deleteStore";
 
     export let post;
     export let author;
@@ -148,9 +149,35 @@
     async function handleEditPost() {
         alert("Edit Post");
     }
-    
-    async function handleDeletePost() {
-        alert("Delete Post");
+
+    async function handleDelete() {
+        if (!confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/post/${post.id}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete post');
+            }
+
+            // Show success message
+            toast.success("Post deleted successfully");
+
+            // Trigger post deletion update
+            triggerPostDelete(post.id);
+
+            // Redirect to profile page if we're on the post's page
+            if ($page.url.pathname === `/p/${post.id}`) {
+                goto(`/u/${author.username}`);
+            }
+        } catch (err) {
+            console.error('Failed to delete post:', err);
+            toast.error("Failed to delete post");
+        }
     }
 </script>
 
@@ -231,7 +258,7 @@
                         <Pencil class="h-4 w-4" />
                         <p>Edit Post</p>
                     </DropdownMenuItem>
-                    <DropdownMenuItem class="gap-2 !text-destructive" on:click={handleDeletePost}>
+                    <DropdownMenuItem class="gap-2 !text-destructive" on:click={handleDelete}>
                         <Trash class="h-4 w-4" />
                         <p>Delete Post</p>
                     </DropdownMenuItem>

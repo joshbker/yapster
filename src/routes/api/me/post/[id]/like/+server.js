@@ -56,3 +56,23 @@ export const PATCH = async ({ params, locals }) => {
         throw error(500, "Failed to like/unlike post")
     }
 }
+
+export const DELETE = async ({ params, locals }) => {
+    const { id } = params
+    const currentUser = locals.user
+
+    try {
+        // Remove post ID from user's likes array
+        await User.updateOne(
+            { _id: currentUser.id },
+            { $pull: { likes: id } }
+        )
+
+        return json({
+            success: true
+        })
+    } catch (err) {
+        console.error(err)
+        throw error(500, "Failed to remove post from likes")
+    }
+}

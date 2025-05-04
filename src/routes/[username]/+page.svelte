@@ -136,7 +136,7 @@
     {#if viewer}
         <div class="mt-6">
             <Tabs.Root value="posts">
-                <Tabs.List class="w-full flex justify-center border-b">
+                <Tabs.List class="w-full flex justify-center">
                     <Tabs.Trigger value="posts" class="flex-1">
                         Posts
                     </Tabs.Trigger>
@@ -150,14 +150,14 @@
                     {/if}
                 </Tabs.List>
                 <Tabs.Content value="posts">
-                    <PostGrid postIds={[...userPosts].reverse()} />
+                    <PostGrid postIds={[...userPosts].reverse()} type="posts" />
                 </Tabs.Content>
                 <Tabs.Content value="likes">
-                    <PostGrid postIds={[...userLikes].reverse()} />
+                    <PostGrid postIds={[...userLikes].reverse()} type="likes" />
                 </Tabs.Content>
                 {#if isOwnProfile}
                     <Tabs.Content value="saves">
-                        <PostGrid postIds={[...userSaves].reverse()} />
+                        <PostGrid postIds={[...userSaves].reverse()} type="saves" />
                     </Tabs.Content>
                 {/if}
             </Tabs.Root>

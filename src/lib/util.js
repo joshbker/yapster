@@ -110,12 +110,30 @@ export function isValidEmail(email) {
 }
 
 export async function getUserById(id) {
-    const response = await fetch(`${PUBLIC_BASE_URL}/api/user/id/${id}`)
-    const data = await response.json()
-    return data
+    if (!id) {
+        return null;
+    }
+
+    try {
+        const response = await fetch(`${PUBLIC_BASE_URL}/api/user/id/${id}`)
+        if (!response.ok) {
+            if (response.status === 404) {
+                return null;
+            }
+        }
+        const data = await response.json()
+        return data
+    } catch (err) {
+        console.error('Failed to fetch user:', err);
+        return null;
+    }
 }
 
 export async function getUserByUsername(username) {
+    if (!username) {
+        return null;
+    }
+
     if (username.startsWith('@')) {
         username = username.slice(1)
     }
@@ -133,9 +151,43 @@ export async function getUserByUsername(username) {
 }
 
 export async function getPostById(id) {
-    const response = await fetch(`${PUBLIC_BASE_URL}/api/post/${id}`)
-    const data = await response.json()
-    return data
+    if (!id) {
+        return null;
+    }
+
+    try {
+        const response = await fetch(`${PUBLIC_BASE_URL}/api/post/${id}`)
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                return {
+                    id,
+                    isDeleted: true,
+                    timestamp: new Date(),
+                    likes: [],
+                    saves: [],
+                    comments: [],
+                    content: { items: [], text: "", location: "", tags: [] }
+                };
+            }
+        }
+
+        const data = await response.json()
+        return { ...data, isDeleted: false }
+    } catch (err) {
+        if (err.status === 404) {
+            return {
+                id,
+                isDeleted: true,
+                timestamp: new Date(),
+                likes: [],
+                saves: [],
+                comments: [],
+                content: { items: [], text: "", location: "", tags: [] }
+            };
+        }
+        console.error('Failed to fetch post:', err);
+    }
 }
 
 /**
