@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { username } from "better-auth/plugins";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { database } from "$lib/data/mongo";
-import { USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH } from "$lib/util";
+import { USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH } from "$lib/validationUtil";
 export const auth = betterAuth({
 	plugins: [
 		username({
