@@ -20,7 +20,7 @@
         validateName,
         validatePronouns,
         validateBio
-    } from '$lib/util';
+    } from '$lib/validationUtil';
 
     // Store original values
     const originalData = {

@@ -1,6 +1,6 @@
 import { json, error } from "@sveltejs/kit"
 import { user as User } from "$lib/data/model/user.js"
-import { validateUsername, validateName, validateImageUrl, validatePronouns, validateBio } from "$lib/util.js"
+import { validateUsername, validateName, validateImageUrl, validatePronouns, validateBio } from "$lib/validationUtil"
 
 export const GET = async ({ locals }) => json(locals.user)
 

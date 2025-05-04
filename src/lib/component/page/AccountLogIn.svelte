@@ -3,7 +3,7 @@
 	import { Input } from '$lib/component/ui/input';
 	import { PasswordInput } from '$lib/component/ui/password-input';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '$lib/component/ui/card';
-	import { isValidEmail } from '$lib/util';
+	import { isValidEmail } from '$lib/validationUtil';
 	import { client } from '$lib/auth/auth-client';
 
 	export let showForgotPassword = true;
