@@ -11,6 +11,7 @@
     import { triggerLikeUpdate } from "$lib/data/likeStore";
     import { triggerSaveUpdate } from "$lib/data/saveStore";
     import { triggerPostDelete } from "$lib/data/deleteStore";
+    import { clearPostCache } from "$lib/data/postStore";
 
     export let post;
     export let author;
@@ -73,6 +74,9 @@
                 post.likes = [...(post.likes || []), viewer.id];
             }
 
+            // Clear the post from cache since it's been modified
+            clearPostCache(post.id);
+
             // Trigger like update
             triggerLikeUpdate(post.id);
         } catch (err) {
@@ -119,6 +123,9 @@
                 post.saves = [...(post.saves || []), viewer.id];
             }
 
+            // Clear the post from cache since it's been modified
+            clearPostCache(post.id);
+
             // Trigger save update
             triggerSaveUpdate(post.id);
         } catch (err) {
@@ -164,13 +171,16 @@
                 throw new Error('Failed to delete post');
             }
 
+            // Clear the post from cache
+            clearPostCache(post.id);
+
             // Show success message
             toast.success("Post deleted successfully");
 
-            // Trigger post deletion update
+            // Trigger post delete update
             triggerPostDelete(post.id);
 
-            // Redirect to profile page if we're on the post's page
+            // If we're on the post's page, navigate back
             if ($page.url.pathname === `/p/${post.id}`) {
                 goto(`/u/${author.username}`);
             }

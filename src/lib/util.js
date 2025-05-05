@@ -2,6 +2,7 @@ import { clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { cubicOut } from "svelte/easing"
 import { PUBLIC_BASE_URL } from "$env/static/public"
+import { getCachedPost, cachePost } from "./data/postStore"
 
 // Function to calculate how long ago a date was
 export function getTimeAgo(date) {
@@ -156,11 +157,17 @@ export async function getPostById(id) {
     }
 
     try {
+        // Try to get from cache first
+        const cachedPost = await getCachedPost(id);
+        if (cachedPost) {
+            return cachedPost;
+        }
+
         const response = await fetch(`${PUBLIC_BASE_URL}/api/post/${id}`)
         
         if (!response.ok) {
             if (response.status === 404) {
-                return {
+                const deletedPost = {
                     id,
                     isDeleted: true,
                     timestamp: new Date(),
@@ -169,14 +176,21 @@ export async function getPostById(id) {
                     comments: [],
                     content: { items: [], text: "", location: "", tags: [] }
                 };
+                cachePost(id, deletedPost);
+                return deletedPost;
             }
         }
 
-        const data = await response.json()
-        return { ...data, isDeleted: false }
+        const data = await response.json();
+        const post = { ...data, isDeleted: false };
+        
+        // Cache the post
+        cachePost(id, post);
+        
+        return post;
     } catch (err) {
         if (err.status === 404) {
-            return {
+            const deletedPost = {
                 id,
                 isDeleted: true,
                 timestamp: new Date(),
@@ -185,6 +199,8 @@ export async function getPostById(id) {
                 comments: [],
                 content: { items: [], text: "", location: "", tags: [] }
             };
+            cachePost(id, deletedPost);
+            return deletedPost;
         }
         console.error('Failed to fetch post:', err);
     }
