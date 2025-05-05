@@ -170,9 +170,9 @@
             // Trigger post deletion update
             triggerPostDelete(post.id);
 
-            // Redirect to profile page if we're on the post's page
+            // Redirect to home page if we're on the post's page
             if ($page.url.pathname === `/p/${post.id}`) {
-                goto(`/u/${author.username}`);
+                goto(`/`);
             }
         } catch (err) {
             console.error('Failed to delete post:', err);
