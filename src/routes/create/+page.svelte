@@ -154,7 +154,8 @@
                 try {
                     validatedText = validateTextContent(text.trim());
                 } catch (err) {
-                    toast.error(err.message);
+                    console.error('Text validation error:', err);
+                    toast.error(err.message || 'Invalid text content');
                     isLoading = false;
                     return;
                 }
@@ -163,45 +164,56 @@
             // Upload images first if there are any
             const uploadedUrls = [];
             
-            for (const file of mediaFiles) {
-                const formData = new FormData();
-                formData.append('image', file);
-                
-                const response = await fetch('/api/image?post=true', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to upload image');
+            for (let i = 0; i < mediaFiles.length; i++) {
+                const file = mediaFiles[i];
+                try {
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    
+                    const response = await fetch('/api/image?post=true', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        const data = await response.json();
+                        throw new Error(data.error || `Failed to upload image ${i+1}/${mediaFiles.length}`);
+                    }
+                    
+                    const result = await response.json();
+                    uploadedUrls.push(result.url);
+                } catch (err) {
+                    console.error(`Image upload error (${i+1}/${mediaFiles.length}):`, err);
+                    throw new Error(`Failed to upload image ${i+1}/${mediaFiles.length}: ${err.message || 'Unknown error'}`);
                 }
-                
-                const result = await response.json();
-                uploadedUrls.push(result.url);
             }
 
             // Create the post with uploaded images
+            const postData = {
+                content: {
+                    text: validatedText,
+                    location: location.trim(),
+                    tags,
+                    items: uploadedUrls
+                }
+            };
+
+            console.log('Sending post data:', JSON.stringify(postData));
+            
             const response = await fetch('/api/me/post', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    content: {
-                        text: validatedText,
-                        location: location.trim(),
-                        tags,
-                        items: uploadedUrls
-                    }
-                })
+                body: JSON.stringify(postData)
             });
 
+            const responseData = await response.json();
+            
             if (!response.ok) {
-                throw new Error('Failed to create post');
+                throw new Error(responseData.message || responseData.error || 'Failed to create post');
             }
 
-            const result = await response.json();
-            
             // Clean up preview URLs
             previewUrls.forEach(url => URL.revokeObjectURL(url));
             
@@ -209,7 +221,7 @@
             goto('/'); // Redirect to home page
         } catch (err) {
             console.error('Error creating post:', err);
-            error = err.message || 'Failed to create post';
+            error = err.message || 'Failed to create post. Please try again later.';
             toast.error(error);
         } finally {
             isLoading = false;

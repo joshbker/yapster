@@ -13,15 +13,23 @@ export async function POST({ request, url, locals }) {
 
         // Ensure user is authenticated
         if (!locals.user) {
-            throw error(401, "Unauthorized");
+            throw error(401, { message: "Unauthorized - user not logged in" });
         }
 
         // Get the image data from the request
-        const formData = await request.formData();
+        let formData;
+        try {
+            formData = await request.formData();
+        } catch (formDataError) {
+            console.error('Error parsing form data:', formDataError);
+            throw error(400, { message: 'Invalid form data: ' + formDataError.message });
+        }
+        
         const imageFile = formData.get('image');
 
         if (!imageFile) {
-            return json({ error: 'No image file provided' }, { status: 400 });
+            console.error('No image file provided in form data');
+            throw error(400, { message: 'No image file provided' });
         }
 
         // Validate image format
@@ -38,10 +46,13 @@ export async function POST({ request, url, locals }) {
                 providedType: imageFile.type,
                 acceptedTypes
             });
-            return json({ 
-                error: 'Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.',
-                acceptedTypes
-            }, { status: 400 });
+            throw error(400, { 
+                message: `Invalid file type (${imageFile.type}). Only JPEG, PNG, GIF, and WebP images are allowed.`,
+                details: {
+                    providedType: imageFile.type,
+                    acceptedTypes
+                }
+            });
         }
 
         // Validate file size
@@ -52,16 +63,26 @@ export async function POST({ request, url, locals }) {
                 providedSize: imageFile.size,
                 maxSize: MAX_FILE_SIZE
             });
-            return json({ 
-                error: `Image file is too large. Maximum size is 512KB.`,
-                maxSizeKB: MAX_FILE_SIZE / 1024
-            }, { status: 400 });
+            throw error(400, { 
+                message: `Image file is too large (${Math.round(imageFile.size / 1024)}KB). Maximum size is 512KB.`,
+                details: {
+                    providedSizeKB: Math.round(imageFile.size / 1024),
+                    maxSizeKB: MAX_FILE_SIZE / 1024
+                }
+            });
         }
 
         // Get current user data to check for existing images
-        const currentUser = await User.findById(locals.user.id).lean();
-        if (!currentUser) {
-            throw error(404, "User not found");
+        let currentUser;
+        try {
+            currentUser = await User.findById(locals.user.id).lean();
+            if (!currentUser) {
+                console.error('User not found when uploading image:', locals.user.id);
+                throw error(404, { message: "User not found" });
+            }
+        } catch (userError) {
+            console.error('Error fetching user for image upload:', userError);
+            throw error(500, { message: "Error fetching user data: " + userError.message });
         }
 
         // Delete old image if it exists
@@ -98,16 +119,35 @@ export async function POST({ request, url, locals }) {
             fileSize: imageFile.size,
             key,
             isAvatar,
-            isBanner
+            isBanner,
+            isPost
         });
 
         // Upload to R2
-        const imageUrl = await uploadToR2(imageFile, key);
+        let imageUrl;
+        try {
+            imageUrl = await uploadToR2(imageFile, key);
+        } catch (uploadError) {
+            console.error('R2 upload error:', uploadError);
+            throw error(500, { message: "Failed to upload image to storage: " + uploadError.message });
+        }
 
         // Return the image URL
         return json({ url: imageUrl });
-    } catch (error) {
-        console.error('Error uploading image:', error);
-        return json({ error: error.message || 'Internal server error' }, { status: 500 });
+    } catch (err) {
+        console.error('Error uploading image:', err);
+        
+        // If it's already a SvelteKit error with status and message, return it
+        if (err.status) {
+            return json({ 
+                error: err.body?.message || err.message || 'Unknown error', 
+                details: err.body?.details 
+            }, { status: err.status });
+        }
+        
+        // For other errors
+        return json({ 
+            error: err.message || 'Internal server error' 
+        }, { status: 500 });
     }
 }
