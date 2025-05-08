@@ -21,6 +21,10 @@ const commentSchema = new Schema({
     likes: {
         type: [String],
         default: []
+    },
+    parentId: {
+        type: String,
+        default: null
     }
 }, {
     versionKey: false,

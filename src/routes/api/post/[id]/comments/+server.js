@@ -23,7 +23,8 @@ export const GET = async ({ params }) => {
                 timestamp: 1,
                 likes: 1,
                 author: 1,
-                post: 1  // Include the post ID in the response
+                post: 1,
+                parentId: 1  // Include parentId in the response
             }}
         ]);
 
@@ -42,7 +43,8 @@ export const GET = async ({ params }) => {
             timestamp: comment.timestamp,
             likes: comment.likes,
             author: comment.author,
-            post: comment.post
+            post: comment.post,
+            parentId: comment.parentId
         }));
 
         return json(transformedComments);
@@ -54,7 +56,7 @@ export const GET = async ({ params }) => {
 
 export const POST = async ({ params, request, locals }) => {
     const { id } = params
-    const { text } = await request.json()
+    const { text, parentId } = await request.json()
 
     // Check if user is authenticated
     if (!locals.user) {
@@ -68,12 +70,21 @@ export const POST = async ({ params, request, locals }) => {
             throw error(404, "Post not found");
         }
 
+        // If this is a reply, verify parent comment exists and belongs to the same post
+        if (parentId) {
+            const parentComment = await Comment.findOne({ _id: parentId, post: id });
+            if (!parentComment) {
+                throw error(404, "Parent comment not found or does not belong to this post");
+            }
+        }
+
         // Create new comment
         const comment = await Comment.create({
             text,
             author: locals.user.id,
             timestamp: new Date(),
-            post: id
+            post: id,
+            parentId: parentId || null
         });
 
         // Update both post and user in parallel using bulkWrite
@@ -96,12 +107,15 @@ export const POST = async ({ params, request, locals }) => {
             ])
         ]);
 
-        // Return the new comment (no need to fetch author details since we have the ID)
+        // Return the new comment
         return json({
             id: comment._id,
             text: comment.text,
             timestamp: comment.timestamp,
-            author: locals.user.id
+            author: locals.user.id,
+            post: comment.post,
+            parentId: comment.parentId,
+            likes: []
         });
     } catch (err) {
         console.error(err)

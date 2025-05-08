@@ -9,16 +9,42 @@
     import { writable } from "svelte/store";
     import CommentActions from "./CommentActions.svelte";
     import ParsedText from "$lib/component/common/ParsedText.svelte";
+    import { replyingTo } from "$lib/store/replyStore.js";
     
     export let comment;
     export let viewer;
+    export let onCommentCreated;
 
     const authorData = writable(null);
+    const parentAuthorData = writable(null);
+
+    function handleReplyClick() {
+        if ($replyingTo?.commentId === comment.id) {
+            // If already replying to this comment, clear it
+            replyingTo.set(null);
+        } else {
+            // Set up reply to this comment
+            replyingTo.set({
+                commentId: comment.id,
+                username: $authorData?.username,
+                postId: comment.post
+            });
+        }
+    }
 
     onMount(async () => {
         try {
             const userData = await getUserById(comment.author);
             authorData.set(userData);
+
+            // If this is a reply, fetch the parent author's data
+            if (comment.parentId) {
+                const parentComment = await fetch(`/api/post/${comment.post}/comments/${comment.parentId}`).then(r => r.json());
+                if (parentComment) {
+                    const parentUserData = await getUserById(parentComment.author);
+                    parentAuthorData.set(parentUserData);
+                }
+            }
         } catch (err) {
             console.error('Failed to fetch author data:', err);
         }
@@ -62,7 +88,11 @@
                                             <BadgeVerified size={14} />
                                         {/if}
                                     </div>
-                                    {#if $authorData?.name}
+                                    {#if comment.parentId && $parentAuthorData}
+                                        <p class="text-xs font-medium text-muted-foreground">
+                                            Replying to {$parentAuthorData.username}
+                                        </p>
+                                    {:else if $authorData?.name}
                                         <p class="text-xs font-medium text-muted-foreground">{$authorData.username}</p>
                                     {/if}
                                 </div>
@@ -84,6 +114,14 @@
             </div>
         </div>
 
-        <CommentActions {comment} {viewer} />
+        <CommentActions {comment} {viewer} onReply={handleReplyClick} />
     </div>
+
+    {#if comment.replies && comment.replies.length > 0}
+        <div class="{!comment.parentId ? 'ml-8' : '-ml-3'} mt-2 space-y-4 -mr-3">
+            {#each comment.replies as reply (reply.id)}
+                <svelte:self comment={reply} {viewer} {onCommentCreated} />
+            {/each}
+        </div>
+    {/if}
 </div> 

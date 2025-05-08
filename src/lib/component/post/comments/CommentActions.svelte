@@ -1,5 +1,5 @@
 <script>
-    import { Heart, MoreHorizontal, Flag, Ban, BellOff, Pencil, Trash } from "lucide-svelte";
+    import { Heart, MoreHorizontal, Flag, Ban, BellOff, Pencil, Trash, Reply } from "lucide-svelte";
     import { toast } from "svelte-sonner";
     import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "$lib/component/ui/dropdown-menu"
     import { writable } from 'svelte/store';
@@ -9,6 +9,7 @@
 
     export let comment;
     export let viewer;
+    export let onReply;
 
     const likeState = writable(false);
     const likeCount = writable(0);
@@ -136,7 +137,7 @@
 </script>
 
 <div class="flex items-center justify-between w-full">
-    <div class="flex items-center">
+    <div class="flex items-center gap-2">
         <button 
             class="transition-colors p-1 {$likeState ? 'text-red-500 hover:text-red-600' : 'hover:text-red-500'}" 
             on:click={handleLike}
@@ -153,6 +154,14 @@
             id={comment.id}
             likeCount={$likeCount}
         />
+        {#if viewer}
+            <button 
+                class="transition-colors p-1 hover:text-primary" 
+                on:click={onReply}
+            >
+                <Reply class="h-3.5 w-3.5" />
+            </button>
+        {/if}
     </div>
     <DropdownMenu>
         <DropdownMenuTrigger>

@@ -11,6 +11,45 @@
     let loading = true;
     let error = null;
 
+    // Function to organize comments into a tree structure
+    function organizeCommentsIntoTree(flatComments) {
+        const commentMap = new Map();
+        const rootComments = [];
+
+        // First pass: Create a map of all comments
+        flatComments.forEach(comment => {
+            commentMap.set(comment.id, { ...comment, replies: [] });
+        });
+
+        // Second pass: Organize into tree structure
+        flatComments.forEach(comment => {
+            const commentWithReplies = commentMap.get(comment.id);
+            if (comment.parentId) {
+                const parent = commentMap.get(comment.parentId);
+                if (parent) {
+                    parent.replies.push(commentWithReplies);
+                }
+            } else {
+                rootComments.push(commentWithReplies);
+            }
+        });
+
+        // Sort replies chronologically (oldest first)
+        commentMap.forEach(comment => {
+            if (comment.replies.length > 0) {
+                comment.replies.sort((a, b) => {
+                    // First by likes
+                    const likeDiff = (b.likes?.length || 0) - (a.likes?.length || 0);
+                    if (likeDiff !== 0) return likeDiff;
+                    // Then by timestamp (oldest first for replies)
+                    return new Date(a.timestamp) - new Date(b.timestamp);
+                });
+            }
+        });
+
+        return rootComments;
+    }
+
     async function loadComments() {
         loading = true;
         error = null;
@@ -20,7 +59,15 @@
                 throw new Error('Failed to load comments');
             }
             const data = await response.json();
-            comments = data;
+            comments = organizeCommentsIntoTree(data);
+            // Sort root comments by likes (desc) and timestamp (desc)
+            comments.sort((a, b) => {
+                // First by likes
+                const likeDiff = (b.likes?.length || 0) - (a.likes?.length || 0);
+                if (likeDiff !== 0) return likeDiff;
+                // Then by timestamp (newest first for root comments)
+                return new Date(b.timestamp) - new Date(a.timestamp);
+            });
         } catch (err) {
             error = "Failed to load comments";
             console.error(err);
@@ -30,7 +77,27 @@
     }
 
     function handleCommentCreated(newComment) {
-        comments = [newComment, ...comments];
+        // Ensure new comment has a replies array
+        newComment = { ...newComment, replies: [] };
+        
+        if (newComment.parentId) {
+            // Find the parent comment and add the reply
+            function addReplyToParent(commentList) {
+                for (let comment of commentList) {
+                    if (comment.id === newComment.parentId) {
+                        comment.replies = [newComment, ...comment.replies];
+                        return true;
+                    }
+                    if (comment.replies && addReplyToParent(comment.replies)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            addReplyToParent(comments);
+        } else {
+            comments = [newComment, ...comments];
+        }
     }
 
     onMount(() => {
@@ -62,7 +129,7 @@
     {:else}
         <div class="w-full space-y-4">
             {#each comments as comment (comment.id)}
-                <Comment {comment} {viewer} />
+                <Comment {comment} {viewer} onCommentCreated={handleCommentCreated} />
             {/each}
         </div>
     {/if}
