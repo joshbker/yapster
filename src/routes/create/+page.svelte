@@ -151,11 +151,26 @@
             // Validate text content if present
             let validatedText = '';
             if (text.trim()) {
+                // Debug whitespace characters
+                if (/[\t\v\u00A0\u2000-\u200A\u202F\u205F\u3000\uFEFF]/.test(text.trim())) {
+                    console.log('Text contains non-standard whitespace characters:', 
+                        Array.from(text.trim()).map(char => ({
+                            char,
+                            code: char.charCodeAt(0).toString(16).padStart(4, '0')
+                        }))
+                    );
+                }
+                
                 try {
                     validatedText = validateTextContent(text.trim());
+                    // Check if whitespace was sanitized
+                    if (validatedText !== text.trim()) {
+                        // Update the text field with the sanitized version
+                        text = validatedText;
+                    }
                 } catch (err) {
                     console.error('Text validation error:', err);
-                    toast.error(err.message || 'Invalid text content');
+                    toast.error(err.body?.message || err.message || 'Invalid text content');
                     isLoading = false;
                     return;
                 }

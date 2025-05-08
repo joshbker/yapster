@@ -20,88 +20,100 @@ export function isValidEmail(email) {
 export function validateTextContent(text) {
     if (!text) return "";
 
-    // Check for RTL characters and other non-standard whitespace
+    // Check for RTL characters
     const rtlRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\u0590-\u05FF]/;
-    const whitespaceRegex = /[^\S ]/; // Matches any whitespace except regular spaces
     
     if (rtlRegex.test(text)) {
-        throw error(400, "Text contains unsupported characters");
+        throw error(400, { message: "Text contains unsupported RTL characters" });
     }
     
-    if (whitespaceRegex.test(text)) {
-        throw error(400, "Text contains invalid whitespace characters");
+    // Replace problematic whitespace characters with standard spaces instead of rejecting
+    const originalText = text;
+    
+    // Non-standard whitespace includes tabs, non-breaking spaces, zero-width spaces, etc.
+    // But we'll preserve legitimate newlines and carriage returns
+    const nonStandardWhitespace = /[\t\v\u00A0\u2000-\u200A\u202F\u205F\u3000\uFEFF]/g;
+    const sanitizedText = text.replace(nonStandardWhitespace, ' ');
+    
+    // Log if we had to sanitize whitespace
+    if (sanitizedText !== originalText) {
+        console.log('Text whitespace sanitized:', { 
+            originalLength: originalText.length,
+            sanitizedLength: sanitizedText.length,
+            diff: originalText.length - sanitizedText.length 
+        });
     }
     
-    if (text.length > POST_TEXT_MAX_LENGTH) {
-        throw error(400, `Text exceeds maximum length of ${POST_TEXT_MAX_LENGTH} characters`);
+    if (sanitizedText.length > POST_TEXT_MAX_LENGTH) {
+        throw error(400, { message: `Text exceeds maximum length of ${POST_TEXT_MAX_LENGTH} characters` });
     }
     
-    return text;
+    return sanitizedText;
 }
 
 // Username validation
 export function validateUsername(username) {
     if (username.length < USERNAME_MIN_LENGTH || username.length > USERNAME_MAX_LENGTH) {
-        throw error(400, `Username must be between ${USERNAME_MIN_LENGTH} and ${USERNAME_MAX_LENGTH} characters`)
+        throw error(400, { message: `Username must be between ${USERNAME_MIN_LENGTH} and ${USERNAME_MAX_LENGTH} characters` });
     }
     if (!/^[a-zA-Z0-9]+$/.test(username)) {
-        throw error(400, "Username can only contain letters and numbers")
+        throw error(400, { message: "Username can only contain letters and numbers" });
     }
-    return username.toLowerCase()
+    return username.toLowerCase();
 }
 
 // Name validation
 export function validateName(name) {
     if (name === null) return null;
     if (name.length > NAME_MAX_LENGTH) {
-        throw error(400, `Name must be ${NAME_MAX_LENGTH} characters or less`)
+        throw error(400, { message: `Name must be ${NAME_MAX_LENGTH} characters or less` });
     }
     if (!/^[\x20-\x7E]+$/.test(name)) {
-        throw error(400, "Name can only contain standard ASCII characters and spaces")
+        throw error(400, { message: "Name can only contain standard ASCII characters and spaces" });
     }
     if (/\s/.test(name) && !/^[ \t\n\r\f]*$/.test(name)) {
-        const invalidWhitespace = /[^\S ]/g.test(name)
+        const invalidWhitespace = /[^\S ]/g.test(name);
         if (invalidWhitespace) {
-            throw error(400, "Name can only contain regular spaces as whitespace")
+            throw error(400, { message: "Name can only contain regular spaces as whitespace" });
         }
     }
-    return name
+    return name;
 }
 
 // Image URL validation
 export function validateImageUrl(url, field) {
     if (url === null) return null;
     if (!url.startsWith(IMAGE_URL_PREFIX)) {
-        throw error(400, `${field} must be from ${IMAGE_URL_PREFIX}`)
+        throw error(400, { message: `${field} must be from ${IMAGE_URL_PREFIX}` });
     }
-    return url
+    return url;
 }
 
 // Pronouns validation
 export function validatePronouns(pronouns) {
     if (pronouns === null) return null;
     if (pronouns.length > PRONOUNS_MAX_LENGTH) {
-        throw error(400, `Pronouns must be ${PRONOUNS_MAX_LENGTH} characters or less`)
+        throw error(400, { message: `Pronouns must be ${PRONOUNS_MAX_LENGTH} characters or less` });
     }
     if (!/^[\x20-\x7E]+$/.test(pronouns)) {
-        throw error(400, "Pronouns can only contain standard ASCII characters and spaces")
+        throw error(400, { message: "Pronouns can only contain standard ASCII characters and spaces" });
     }
     if (/\s/.test(pronouns) && !/^[ \t\n\r\f]*$/.test(pronouns)) {
-        const invalidWhitespace = /[^\S ]/g.test(pronouns)
+        const invalidWhitespace = /[^\S ]/g.test(pronouns);
         if (invalidWhitespace) {
-            throw error(400, "Pronouns can only contain regular spaces as whitespace")
+            throw error(400, { message: "Pronouns can only contain regular spaces as whitespace" });
         }
     }
-    return pronouns
+    return pronouns;
 }
 
 // Bio validation
 export function validateBio(bio) {
     if (bio === null) return null;
     if (bio.length > BIO_MAX_LENGTH) {
-        throw error(400, `Bio must be ${BIO_MAX_LENGTH} characters or less`)
+        throw error(400, { message: `Bio must be ${BIO_MAX_LENGTH} characters or less` });
     }
-    return bio
+    return bio;
 }
 
 // Tag validation
@@ -113,7 +125,7 @@ export function validateTag(tag) {
     
     // Only allow alphanumeric characters and underscores
     if (!/^[\p{L}\p{N}_]+$/u.test(tag)) {
-        throw error(400, "Tags can only contain letters, numbers, and underscores");
+        throw error(400, { message: "Tags can only contain letters, numbers, and underscores" });
     }
     
     return tag.toLowerCase();
@@ -125,12 +137,12 @@ export function validatePost(content) {
 
     // Validate that there's either text or images
     if (!text.trim() && items.length === 0) {
-        throw error(400, "Post must contain either text or images");
+        throw error(400, { message: "Post must contain either text or images" });
     }
 
     // Validate images count
     if (items.length > MAX_POST_IMAGES) {
-        throw error(400, `Cannot upload more than ${MAX_POST_IMAGES} images`);
+        throw error(400, { message: `Cannot upload more than ${MAX_POST_IMAGES} images` });
     }
 
     // Validate text if present
